@@ -18,7 +18,14 @@
     <name>hyperbench</name>
 
     <modules>
-        <module>hyperbench-client</module>
-        <module>hyperbench-server</module>
+        <module>hyperbench-shared</module>
+        <module>hyperbench-server-shared</module>
+        <module>hyperbench-server-hal-schema-forms</module>
+        <module>hyperbench-server-todos</module>
+        <module>hyperbench-server-onboarding</module>
+        <module>hyperbench-dashboard</module>
+        <module>hyperbench-todos</module>
+        <module>hyperbench-clients</module>
+        <module>hyperbench-onboarding</module>
     </modules>
 </project>

@@ -4,53 +4,95 @@ maven = "3.9"
 node = "22"
 
 [tasks.build]
-description = "Build everything (client + server fat JAR)"
+description = "Build everything (shared + services + server)"
 run = "mvn clean package"
 
 [tasks.test]
-description = "Run server tests"
-run = "mvn test -pl hyperbench-server"
-
-[tasks."test:all"]
 description = "Run all tests across modules"
 run = "mvn test"
 
 [tasks.dev]
-description = "Start Spring Boot server with hot-reload"
-depends = ["build:client"]
-run = "mvn spring-boot:run -pl hyperbench-server"
-
-[tasks."dev:client"]
-description = "Start Vite dev server with proxy to Spring Boot"
-dir = "hyperbench-client"
-run = "npm run dev"
-
-[tasks."dev:full"]
-description = "Start both Spring Boot and Vite dev server"
-depends = ["build:client"]
+description = "Start all Spring Boot services then all micro-frontend services"
+depends = ["build:services", "build:server"]
 run = """
-echo "Starting Spring Boot on :8080..."
-mvn spring-boot:run -pl hyperbench-server &
-SERVER_PID=$!
-trap 'kill $SERVER_PID $CLIENT_PID 2>/dev/null' EXIT
+echo "Starting Spring Boot services..."
+mvn spring-boot:run -pl hyperbench-server-todos &
+TODOS_SERVER_PID=$!
+mvn spring-boot:run -pl hyperbench-server-onboarding &
+ONBOARDING_SERVER_PID=$!
+trap 'kill $TODOS_SERVER_PID $ONBOARDING_SERVER_PID $DASHBOARD_PID $TODOS_PID $CLIENTS_PID $ONBOARDING_PID 2>/dev/null' EXIT
 
-echo "Waiting for Spring Boot to be ready..."
-until curl -sf http://localhost:8080/actuator/health | grep -q '"status":"UP"'; do
+echo "Waiting for Spring Boot services to be ready..."
+until curl -sf http://localhost:8081/actuator/health | grep -q '"status":"UP"'; do
   sleep 1
 done
-echo "Spring Boot is UP"
+echo "Todos server is UP on :8081"
 
-echo "Starting Vite on :5173..."
-cd hyperbench-client && npm run dev &
-CLIENT_PID=$!
+until curl -sf http://localhost:8082/actuator/health | grep -q '"status":"UP"'; do
+  sleep 1
+done
+echo "Onboarding server is UP on :8082"
+
+echo "Starting micro-frontend services..."
+cd hyperbench-todos && npm run start &
+TODOS_PID=$!
+cd hyperbench-clients && npm run start &
+CLIENTS_PID=$!
+cd hyperbench-onboarding && npm run start &
+ONBOARDING_PID=$!
+
+sleep 1
+echo "Starting dashboard gateway on :3000..."
+cd hyperbench-dashboard && npm run start &
+DASHBOARD_PID=$!
 wait
 """
 
-[tasks."build:client"]
-description = "Build the React client"
-dir = "hyperbench-client"
-run = "npm ci && npm run build"
+[tasks."dev:server-todos"]
+description = "Start todos Spring Boot service only"
+depends = ["build:server"]
+run = "mvn spring-boot:run -pl hyperbench-server-todos"
+
+[tasks."dev:server-onboarding"]
+description = "Start onboarding Spring Boot service only"
+depends = ["build:server"]
+run = "mvn spring-boot:run -pl hyperbench-server-onboarding"
+
+[tasks."dev:dashboard"]
+description = "Start dashboard gateway only"
+depends = ["build:services"]
+dir = "hyperbench-dashboard"
+run = "npm run start"
+
+[tasks."dev:todos"]
+description = "Start todos service only"
+depends = ["build:services"]
+dir = "hyperbench-todos"
+run = "npm run start"
+
+[tasks."dev:clients"]
+description = "Start clients service only"
+depends = ["build:services"]
+dir = "hyperbench-clients"
+run = "npm run start"
+
+[tasks."dev:onboarding"]
+description = "Start onboarding service only"
+depends = ["build:services"]
+dir = "hyperbench-onboarding"
+run = "npm run start"
+
+[tasks."build:services"]
+description = "Build all Node.js services (shared + all micro-frontends)"
+run = """
+npm install
+npm run build --workspace=hyperbench-shared
+npm run build --workspace=hyperbench-dashboard
+npm run build --workspace=hyperbench-todos
+npm run build --workspace=hyperbench-clients
+npm run build --workspace=hyperbench-onboarding
+"""
 
 [tasks."build:server"]
-description = "Build server only (skips client build)"
-run = "mvn package -pl hyperbench-server -am"
+description = "Build and install all server modules"
+run = "mvn install -N && mvn clean install -pl hyperbench-server-shared,hyperbench-server-todos,hyperbench-server-onboarding"

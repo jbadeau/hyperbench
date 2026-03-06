@@ -1,0 +1,35 @@
+{
+  "name": "@hyperbench/shared",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./renderer.js": {
+      "types": "./dist/renderer.d.ts",
+      "default": "./dist/renderer.js"
+    },
+    "./lib/fetch.js": {
+      "types": "./dist/lib/fetch.d.ts",
+      "default": "./dist/lib/fetch.js"
+    },
+    "./hal-schema-forms.js": {
+      "types": "./dist/hal-schema-forms/index.d.ts",
+      "default": "./dist/hal-schema-forms/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@json-render/core": "^0.11.0",
+    "@json-render/react": "^0.11.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.0"
+  }
+}
