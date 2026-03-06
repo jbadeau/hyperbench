@@ -284,10 +284,12 @@ HAL-schema-forms JSON (from Spring Boot APIs)
 │  transformer.ts  │  halToSpec(resource) → Spec
 │  HAL → Spec      │  Converts HAL links, forms, and JSON Schema
 └────────┬────────┘  into a flat element tree
+         │
+         │  validateSpec(spec)  ← structural validation
          ▼
 ┌─────────────────┐    ┌──────────────┐
-│  Renderer        │◄───│  registry.tsx │  Shoelace JSX for each component
-│  (json-render)   │    └──────────────┘
+│  HalRenderer     │◄───│  registry.tsx │  Shoelace JSX for each component
+│  (createRenderer)│    └──────────────┘
 └────────┬────────┘    ┌──────────────┐
          │         ◄───│  catalog.ts   │  Zod-validated component definitions
          ▼             └──────────────┘
@@ -297,10 +299,11 @@ HAL-schema-forms JSON (from Spring Boot APIs)
 ```
 
 - **Catalog** — 12 Shoelace component definitions (Card, Form, TextField, SelectField, Button, etc.) with Zod prop schemas
-- **Registry** — Maps each catalog component to Shoelace JSX with HTMX attributes
+- **Registry** — `createRenderer(catalog, components)` maps each component to Shoelace JSX with HTMX attributes, bundling all required providers automatically
 - **Transformer** — Converts HAL resources into a json-render `Spec` (flat element tree), handling template variables, URL rewriting, and dynamic field detection
+- **Validation** — `validateSpec()` checks transformer output for structural issues (missing root, dangling children) and logs warnings before rendering
 
-Only SSR is used — HTMX handles all interactivity. The `Renderer` is wrapped in `JSONUIProvider` (which bundles `StateProvider`, `VisibilityProvider`, and `ActionProvider` required by json-render internals even in SSR mode). The public API is `renderHalForms(resource) → HTML string`.
+Only SSR is used — HTMX handles all interactivity. The public API is `renderHalForms(resource) → HTML string`.
 
 ## JSON Schema to Shoelace mapping
 
