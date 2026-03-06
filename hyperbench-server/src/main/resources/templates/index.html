@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Hyperbench</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+
+<header>
+    <h1>Hyperbench</h1>
+    <div hx-get="/fragments/navigation" hx-trigger="load" hx-swap="innerHTML"></div>
+</header>
+
+<main id="content"
+      hx-get="/fragments/task-list"
+      hx-trigger="load"
+      hx-swap="innerHTML">
+</main>
+
+<script type="module" th:src="@{/assets/main.js}"></script>
+</body>
+</html>

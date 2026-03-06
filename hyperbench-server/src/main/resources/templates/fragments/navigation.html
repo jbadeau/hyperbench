@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<body>
+<nav>
+    <a href="#"
+       hx-get="/fragments/task-list"
+       hx-target="#content"
+       hx-swap="innerHTML"
+       hx-push-url="/">Tasks</a>
+    <a href="#"
+       hx-get="/fragments/task-form"
+       hx-target="#content"
+       hx-swap="innerHTML"
+       hx-push-url="/new">New Task</a>
+</nav>
+</body>
+</html>

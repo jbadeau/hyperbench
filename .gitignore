@@ -1,0 +1,26 @@
+# Maven
+target/
+
+# Node
+node_modules/
+hyperbench-client/node/
+hyperbench-client/dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+
+# Logs
+*.log

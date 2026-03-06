@@ -1,0 +1,56 @@
+[tools]
+java = "21"
+maven = "3.9"
+node = "22"
+
+[tasks.build]
+description = "Build everything (client + server fat JAR)"
+run = "mvn clean package"
+
+[tasks.test]
+description = "Run server tests"
+run = "mvn test -pl hyperbench-server"
+
+[tasks."test:all"]
+description = "Run all tests across modules"
+run = "mvn test"
+
+[tasks.dev]
+description = "Start Spring Boot server with hot-reload"
+depends = ["build:client"]
+run = "mvn spring-boot:run -pl hyperbench-server"
+
+[tasks."dev:client"]
+description = "Start Vite dev server with proxy to Spring Boot"
+dir = "hyperbench-client"
+run = "npm run dev"
+
+[tasks."dev:full"]
+description = "Start both Spring Boot and Vite dev server"
+depends = ["build:client"]
+run = """
+echo "Starting Spring Boot on :8080..."
+mvn spring-boot:run -pl hyperbench-server &
+SERVER_PID=$!
+trap 'kill $SERVER_PID $CLIENT_PID 2>/dev/null' EXIT
+
+echo "Waiting for Spring Boot to be ready..."
+until curl -sf http://localhost:8080/actuator/health | grep -q '"status":"UP"'; do
+  sleep 1
+done
+echo "Spring Boot is UP"
+
+echo "Starting Vite on :5173..."
+cd hyperbench-client && npm run dev &
+CLIENT_PID=$!
+wait
+"""
+
+[tasks."build:client"]
+description = "Build the React client"
+dir = "hyperbench-client"
+run = "npm ci && npm run build"
+
+[tasks."build:server"]
+description = "Build server only (skips client build)"
+run = "mvn package -pl hyperbench-server -am"
