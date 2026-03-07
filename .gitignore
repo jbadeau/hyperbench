@@ -1,10 +1,22 @@
 # Maven
 target/
 
-# Node
+# Node — binaries installed by frontend-maven-plugin
+**/node/node
+**/node/npm
+**/node/npm.cmd
+**/node/npx
+**/node/npx.cmd
 node_modules/
-hyperbench-client/node/
-hyperbench-client/dist/
+
+# Node — compiled output
+**/dist/
+
+# TypeScript build cache
+**/tsconfig.tsbuildinfo
+
+# Go — compiled binaries and tools
+hyperbench/hyperbench-operator/bin/
 
 # IDE
 .idea/
