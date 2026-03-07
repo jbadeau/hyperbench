@@ -1,0 +1,6 @@
+apiVersion: v2
+name: hyperbench-workbench
+description: HyperBench sample workbench CRs (Workbench, Widgets, Actions, NavigationNodes, ServiceProxies)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

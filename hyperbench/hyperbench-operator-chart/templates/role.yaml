@@ -1,0 +1,37 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hyperbench-operator-manager
+  labels:
+    {{- include "hyperbench-operator.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["portal.hyperbench.com"]
+    resources:
+      - workbenches
+      - widgets
+      - actions
+      - navigationnodes
+      - serviceproxies
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["portal.hyperbench.com"]
+    resources:
+      - workbenches/status
+      - widgets/status
+      - actions/status
+      - navigationnodes/status
+      - serviceproxies/status
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["portal.hyperbench.com"]
+    resources:
+      - workbenches/finalizers
+      - widgets/finalizers
+      - actions/finalizers
+      - navigationnodes/finalizers
+      - serviceproxies/finalizers
+    verbs: ["update"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]

@@ -1,0 +1,60 @@
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: ServiceProxy
+metadata:
+  name: clients-service
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  displayName: "Clients Service"
+  frontend:
+    baseUrl: {{ .Values.services.clients.frontendUrl | quote }}
+  api:
+    baseUrl: {{ .Values.services.clients.apiUrl | quote }}
+  proxy:
+    - pathPrefix: "/clients"
+      target: "frontend"
+    - pathPrefix: "/api/clients"
+      target: "api"
+  healthCheck:
+    path: "/actuator/health"
+    target: "api"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: ServiceProxy
+metadata:
+  name: todos-service
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  displayName: "Todos Service"
+  frontend:
+    baseUrl: {{ .Values.services.todos.frontendUrl | quote }}
+  api:
+    baseUrl: {{ .Values.services.todos.apiUrl | quote }}
+  proxy:
+    - pathPrefix: "/todos"
+      target: "frontend"
+    - pathPrefix: "/api/tasks"
+      target: "api"
+  healthCheck:
+    path: "/actuator/health"
+    target: "api"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: ServiceProxy
+metadata:
+  name: onboarding-service
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  displayName: "Onboarding Service"
+  frontend:
+    baseUrl: {{ .Values.services.onboarding.frontendUrl | quote }}
+  api:
+    baseUrl: {{ .Values.services.onboarding.apiUrl | quote }}
+  proxy:
+    - pathPrefix: "/onboarding"
+      target: "frontend"
+  healthCheck:
+    path: "/actuator/health"
+    target: "api"

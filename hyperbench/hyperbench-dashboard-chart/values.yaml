@@ -1,0 +1,7 @@
+image: hyperbench-dashboard:latest
+imagePullPolicy: Never
+port: 3000
+replicas: 1
+
+workbenchNamespace: "workbench"
+workbenchName: "workbench-sample"

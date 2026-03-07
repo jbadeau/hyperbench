@@ -1,0 +1,218 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: workbenches.portal.hyperbench.com
+spec:
+  group: portal.hyperbench.com
+  names:
+    kind: Workbench
+    listKind: WorkbenchList
+    plural: workbenches
+    singular: workbench
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.title
+      name: Title
+      type: string
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Workbench is the Schema for the workbenches API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: WorkbenchSpec defines the desired state of Workbench.
+            properties:
+              branding:
+                description: Branding configures logo and favicon.
+                properties:
+                  favicon:
+                    description: Favicon URL or path for the browser favicon.
+                    type: string
+                  logo:
+                    description: Logo URL or path for the workbench logo.
+                    type: string
+                type: object
+              contextBar:
+                description: ContextBar configures the context/selection bar below
+                  the header.
+                properties:
+                  enabled:
+                    description: Enabled controls whether the context bar is shown.
+                    type: boolean
+                  widgetRef:
+                    description: WidgetRef references a Widget CR that renders the
+                      context bar.
+                    type: string
+                type: object
+              defaultPage:
+                description: DefaultPage is the page to navigate to on initial load.
+                type: string
+              header:
+                description: Header configures the top header bar features.
+                properties:
+                  notifications:
+                    description: Notifications configures the notifications feature
+                      in the header.
+                    properties:
+                      enabled:
+                        description: Enabled controls whether this feature is shown.
+                        type: boolean
+                      widgetRef:
+                        description: WidgetRef references a Widget CR that renders
+                          this feature.
+                        type: string
+                    type: object
+                  search:
+                    description: Search configures the search feature in the header.
+                    properties:
+                      enabled:
+                        description: Enabled controls whether this feature is shown.
+                        type: boolean
+                      widgetRef:
+                        description: WidgetRef references a Widget CR that renders
+                          this feature.
+                        type: string
+                    type: object
+                  settings:
+                    description: Settings configures the settings feature in the header.
+                    properties:
+                      enabled:
+                        description: Enabled controls whether this feature is shown.
+                        type: boolean
+                      widgetRef:
+                        description: WidgetRef references a Widget CR that renders
+                          this feature.
+                        type: string
+                    type: object
+                  userMenu:
+                    description: UserMenu configures the user menu in the header.
+                    properties:
+                      avatar:
+                        description: Avatar URL for the user avatar image.
+                        type: string
+                      enabled:
+                        description: Enabled controls whether the user menu is shown.
+                        type: boolean
+                      label:
+                        description: Label is the display text for the user menu.
+                        type: string
+                    type: object
+                type: object
+              port:
+                description: Port is the port the dashboard gateway listens on.
+                format: int32
+                type: integer
+              theme:
+                description: Theme configures color scheme.
+                properties:
+                  headerBg:
+                    description: HeaderBg is the header background color (CSS value).
+                    type: string
+                  primary:
+                    description: Primary color (CSS value).
+                    type: string
+                type: object
+              title:
+                description: Title is the display title of the workbench portal.
+                type: string
+            required:
+            - defaultPage
+            - title
+            type: object
+          status:
+            description: WorkbenchStatus defines the observed state of Workbench.
+            properties:
+              conditions:
+                description: Conditions represent the latest available observations
+                  of the Workbench's state.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              phase:
+                description: Phase represents the current lifecycle phase of the Workbench.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

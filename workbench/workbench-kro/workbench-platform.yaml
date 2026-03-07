@@ -1,0 +1,259 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: workbench-platform
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: WorkbenchPlatform
+    spec:
+      # -- Workbench settings --
+      title: string | default="HyperBench Portal"
+      defaultPage: string | default="/clients"
+      port: integer | default=3000
+      themePrimary: string | default="#1e40af"
+      themeHeaderBg: string | default="#1e293b"
+
+      # -- Cross-namespace service URLs --
+      todosFrontendUrl: string | default="http://todos.todos.svc.cluster.local:3001"
+      todosApiUrl: string | default="http://todos-api.todos.svc.cluster.local:8081"
+      clientsFrontendUrl: string | default="http://clients.clients.svc.cluster.local:3002"
+      clientsApiUrl: string | default="http://clients-api.clients.svc.cluster.local:8083"
+      onboardingFrontendUrl: string | default="http://onboarding.onboarding.svc.cluster.local:3003"
+      onboardingApiUrl: string | default="http://onboarding-api.onboarding.svc.cluster.local:8082"
+
+    status:
+      workbenchPhase: ${workbench.status.phase}
+
+  resources:
+    # ================================================================
+    # Layer 1: Actions (no dependencies)
+    # ================================================================
+
+    - id: selectClientAction
+      template:
+        apiVersion: portal.hyperbench.com/v1alpha1
+        kind: Action
+        metadata:
+          name: select-client
+        spec:
+          type: "setContext"
+          setContext:
+            params:
+              selectedClientId: "{{event.detail.clientId}}"
+
+    # ================================================================
+    # Layer 2: Widgets (some reference actions)
+    # ================================================================
+
+    - id: clientsFavoritesWidget
+      template:
+        apiVersion: portal.hyperbench.com/v1alpha1
+        kind: Widget
+        metadata:
+          name: clients-favorites
+        spec:
+          type: "server"
+          title: "Favorite Clients"
+          description: "Displays a list of favorite clients"
+          context:
+            subscribes:
+              - key: "selectedClientId"
+                required: false
+            publishes:
+              - key: "selectedClientId"
+          server:
+            endpoint: "/clients/favorites"
+            swap: "innerHTML"
+            trigger: "load, workbench:context from:body"
+          actionRefs:
+            - id: "select"
+              actionRef: ${selectClientAction.metadata.name}
+
+    - id: clientSearchWidget
+      template:
+        apiVersion: portal.hyperbench.com/v1alpha1
+        kind: Widget
+        metadata:
+          name: client-search
+        spec:
+          type: "server"
+          title: "Client Search"
+          description: "Header search widget for finding clients"
+          context:
+            publishes:
+              - key: "selectedClientId"
+          server:
+            endpoint: "/clients/search"
+            swap: "innerHTML"
+            trigger: "load"
+
+    - id: clientContextWidget
+      template:
+        apiVersion: portal.hyperbench.com/v1alpha1
+        kind: Widget
+        metadata:
+          name: client-context
+        spec:
+          type: "server"
+          title: "Client Context"
+          description: "Context bar widget showing selected client details"
+          context:
+            subscribes:
+              - key: "selectedClientId"
+                required: true
+          server:
+            endpoint: "/clients/context"
+            swap: "innerHTML"
+            trigger: "load, workbench:context from:body"
+
+    - id: clientDetailsWidget
+      template:
+        apiVersion: portal.hyperbench.com/v1alpha1
+        kind: Widget
+        metadata:
+          name: client-details
+        spec:
+          type: "server"
+          title: "Client Details"
+          description: "Shows detailed information about the selected client"
+          context:
+            subscribes:
+              - key: "selectedClientId"
+                required: true
+          server:
+            endpoint: "/clients/details"
+            swap: "innerHTML"
+            trigger: "load, workbench:context from:body"
+
+    # ================================================================
+    # Layer 3: ServiceProxies (reference service URLs from schema)
+    # ================================================================
+
+    - id: clientsServiceProxy
+      template:
+        apiVersion: portal.hyperbench.com/v1alpha1
+        kind: ServiceProxy
+        metadata:
+          name: clients-service
+        spec:
+          displayName: "Clients Service"
+          frontend:
+            baseUrl: ${schema.spec.clientsFrontendUrl}
+          api:
+            baseUrl: ${schema.spec.clientsApiUrl}
+          proxy:
+            - pathPrefix: "/clients"
+              target: "frontend"
+            - pathPrefix: "/api/clients"
+              target: "api"
+          healthCheck:
+            path: "/actuator/health"
+            target: "api"
+
+    - id: todosServiceProxy
+      template:
+        apiVersion: portal.hyperbench.com/v1alpha1
+        kind: ServiceProxy
+        metadata:
+          name: todos-service
+        spec:
+          displayName: "Todos Service"
+          frontend:
+            baseUrl: ${schema.spec.todosFrontendUrl}
+          api:
+            baseUrl: ${schema.spec.todosApiUrl}
+          proxy:
+            - pathPrefix: "/todos"
+              target: "frontend"
+            - pathPrefix: "/api/tasks"
+              target: "api"
+          healthCheck:
+            path: "/actuator/health"
+            target: "api"
+
+    - id: onboardingServiceProxy
+      template:
+        apiVersion: portal.hyperbench.com/v1alpha1
+        kind: ServiceProxy
+        metadata:
+          name: onboarding-service
+        spec:
+          displayName: "Onboarding Service"
+          frontend:
+            baseUrl: ${schema.spec.onboardingFrontendUrl}
+          api:
+            baseUrl: ${schema.spec.onboardingApiUrl}
+          proxy:
+            - pathPrefix: "/onboarding"
+              target: "frontend"
+          healthCheck:
+            path: "/actuator/health"
+            target: "api"
+
+    # ================================================================
+    # Layer 4: NavigationNodes (reference widget names)
+    # ================================================================
+
+    - id: clientsPage
+      template:
+        apiVersion: portal.hyperbench.com/v1alpha1
+        kind: NavigationNode
+        metadata:
+          name: clients-page
+        spec:
+          type: "page"
+          title: "Clients"
+          icon: "people"
+          page:
+            description: "Client management dashboard"
+            path: "/clients"
+            layout:
+              type: "grid"
+              columns: "1fr 1fr"
+              rows: "auto"
+              gap: "1rem"
+              areas:
+                - "favorites details"
+              slots:
+                - name: "favorites"
+                  widgetRef: ${clientsFavoritesWidget.metadata.name}
+                  area: "favorites"
+                - name: "details"
+                  widgetRef: ${clientDetailsWidget.metadata.name}
+                  area: "details"
+
+    # ================================================================
+    # Layer 5: Workbench (references widgets for header/context bar)
+    # ================================================================
+
+    - id: workbench
+      template:
+        apiVersion: portal.hyperbench.com/v1alpha1
+        kind: Workbench
+        metadata:
+          name: workbench-sample
+        spec:
+          title: ${schema.spec.title}
+          port: ${schema.spec.port}
+          defaultPage: ${schema.spec.defaultPage}
+          branding:
+            logo: "/assets/logo.svg"
+            favicon: "/assets/favicon.ico"
+          theme:
+            primary: ${schema.spec.themePrimary}
+            headerBg: ${schema.spec.themeHeaderBg}
+          header:
+            search:
+              enabled: true
+              widgetRef: ${clientSearchWidget.metadata.name}
+            notifications:
+              enabled: true
+            settings:
+              enabled: false
+            userMenu:
+              enabled: true
+              label: "Admin User"
+          contextBar:
+            enabled: true
+            widgetRef: ${clientContextWidget.metadata.name}

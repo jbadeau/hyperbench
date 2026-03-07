@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todos
+  labels:
+    app.kubernetes.io/name: todos
+    {{- include "hyperbench-todos.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: todos
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: todos
+    spec:
+      containers:
+        - name: todos
+          image: {{ .Values.frontend.image }}
+          imagePullPolicy: {{ .Values.frontend.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.frontend.port }}
+          env:
+            - name: PORT
+              value: "{{ .Values.frontend.port }}"
+            - name: TODOS_API_URL
+              value: {{ .Values.apiUrl | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todos
+  labels:
+    app.kubernetes.io/name: todos
+    {{- include "hyperbench-todos.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/name: todos
+  ports:
+    - port: {{ .Values.frontend.port }}
+      targetPort: {{ .Values.frontend.port }}

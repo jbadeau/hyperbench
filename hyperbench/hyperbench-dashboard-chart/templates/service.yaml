@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard
+  labels:
+    {{- include "hyperbench-dashboard.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/name: dashboard
+  ports:
+    - port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}

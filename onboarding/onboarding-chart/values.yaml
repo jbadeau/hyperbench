@@ -1,0 +1,13 @@
+frontend:
+  image: onboarding:latest
+  imagePullPolicy: Never
+  port: 3003
+  replicas: 1
+
+api:
+  image: onboarding-service:latest
+  imagePullPolicy: Never
+  port: 8082
+  replicas: 1
+
+apiUrl: "http://onboarding-api:8082"

@@ -1,0 +1,36 @@
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: home-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Home"
+  icon: "house"
+  ordinal: 0
+  page:
+    path: "/"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: clients-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Clients"
+  icon: "people"
+  ordinal: 10
+  page:
+    description: "Client management dashboard"
+    path: "/clients"
+    layout:
+      type: "grid"
+      columns: "1fr"
+      rows: "auto"
+      gap: "1rem"
+      slots:
+        - name: "table"
+          widgetRef: "clients-table"

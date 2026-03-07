@@ -1,0 +1,83 @@
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: Widget
+metadata:
+  labels:
+    app.kubernetes.io/name: hyperbench-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: clients-favorites
+spec:
+  type: "server"
+  title: "Favorite Clients"
+  description: "Displays a list of favorite clients"
+  context:
+    subscribes:
+      - key: "selectedClientId"
+        required: false
+    publishes:
+      - key: "selectedClientId"
+  server:
+    endpoint: "/clients/favorites"
+    swap: "innerHTML"
+    trigger: "load, workbench:context from:body"
+  actionRefs:
+    - id: "select"
+      actionRef: "select-client"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: Widget
+metadata:
+  labels:
+    app.kubernetes.io/name: hyperbench-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: client-search
+spec:
+  type: "server"
+  title: "Client Search"
+  description: "Header search widget for finding clients"
+  context:
+    publishes:
+      - key: "selectedClientId"
+  server:
+    endpoint: "/clients/search"
+    swap: "innerHTML"
+    trigger: "load"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: Widget
+metadata:
+  labels:
+    app.kubernetes.io/name: hyperbench-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: client-context
+spec:
+  type: "server"
+  title: "Client Context"
+  description: "Context bar widget showing selected client details"
+  context:
+    subscribes:
+      - key: "selectedClientId"
+        required: true
+  server:
+    endpoint: "/clients/context"
+    swap: "innerHTML"
+    trigger: "load, workbench:context from:body"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: Widget
+metadata:
+  labels:
+    app.kubernetes.io/name: hyperbench-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: client-details
+spec:
+  type: "server"
+  title: "Client Details"
+  description: "Shows detailed information about the selected client"
+  context:
+    subscribes:
+      - key: "selectedClientId"
+        required: true
+  server:
+    endpoint: "/clients/details"
+    swap: "innerHTML"
+    trigger: "load, workbench:context from:body"

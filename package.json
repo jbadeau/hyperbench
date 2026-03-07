@@ -1,10 +1,10 @@
 {
   "private": true,
   "workspaces": [
-    "hyperbench-shared",
-    "hyperbench-dashboard",
-    "hyperbench-todos",
-    "hyperbench-clients",
-    "hyperbench-onboarding"
+    "hyperbench/hyperbench-shared",
+    "hyperbench/hyperbench-dashboard",
+    "todos/todos",
+    "clients/clients",
+    "onboarding/onboarding"
   ]
 }

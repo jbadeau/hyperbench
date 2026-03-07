@@ -1,0 +1,31 @@
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: Workbench
+metadata:
+  labels:
+    app.kubernetes.io/name: hyperbench-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: workbench-sample
+spec:
+  title: "HyperBench Portal"
+  port: 3000
+  defaultPage: "/clients"
+  branding:
+    logo: "/assets/logo.svg"
+    favicon: "/assets/favicon.ico"
+  theme:
+    primary: "#1e40af"
+    headerBg: "#1e293b"
+  header:
+    search:
+      enabled: true
+      widgetRef: "client-search"
+    notifications:
+      enabled: true
+    settings:
+      enabled: false
+    userMenu:
+      enabled: true
+      label: "Admin User"
+  contextBar:
+    enabled: true
+    widgetRef: "client-context"

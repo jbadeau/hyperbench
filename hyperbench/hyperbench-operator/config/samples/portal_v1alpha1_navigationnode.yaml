@@ -1,0 +1,28 @@
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  labels:
+    app.kubernetes.io/name: hyperbench-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: clients-page
+spec:
+  type: "page"
+  title: "Clients"
+  icon: "people"
+  page:
+    description: "Client management dashboard"
+    path: "/clients"
+    layout:
+      type: "grid"
+      columns: "1fr 1fr"
+      rows: "auto"
+      gap: "1rem"
+      areas:
+        - "favorites details"
+      slots:
+        - name: "favorites"
+          widgetRef: "clients-favorites"
+          area: "favorites"
+        - name: "details"
+          widgetRef: "client-details"
+          area: "details"

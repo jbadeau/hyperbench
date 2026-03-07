@@ -1,0 +1,12 @@
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: Action
+metadata:
+  labels:
+    app.kubernetes.io/name: hyperbench-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: select-client
+spec:
+  type: "setContext"
+  setContext:
+    params:
+      selectedClientId: "{{event.detail.clientId}}"

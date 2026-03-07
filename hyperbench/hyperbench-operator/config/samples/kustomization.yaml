@@ -1,0 +1,8 @@
+## Append samples of your project ##
+resources:
+- portal_v1alpha1_workbench.yaml
+- portal_v1alpha1_serviceproxy.yaml
+- portal_v1alpha1_navigationnode.yaml
+- portal_v1alpha1_widget.yaml
+- portal_v1alpha1_action.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

@@ -1,0 +1,21 @@
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: ServiceProxy
+metadata:
+  labels:
+    app.kubernetes.io/name: hyperbench-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: clients-service
+spec:
+  displayName: "Clients Service"
+  frontend:
+    baseUrl: "http://localhost:3002"
+  api:
+    baseUrl: "http://localhost:8083"
+  proxy:
+    - pathPrefix: "/clients"
+      target: "frontend"
+    - pathPrefix: "/api/clients"
+      target: "api"
+  healthCheck:
+    path: "/actuator/health"
+    target: "api"

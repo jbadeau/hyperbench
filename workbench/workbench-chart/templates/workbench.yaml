@@ -1,0 +1,30 @@
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: Workbench
+metadata:
+  name: workbench-sample
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  title: {{ .Values.workbench.title | quote }}
+  port: {{ .Values.workbench.port }}
+  defaultPage: {{ .Values.workbench.defaultPage | quote }}
+  branding:
+    logo: "/assets/logo.svg"
+    favicon: "/assets/favicon.ico"
+  theme:
+    primary: {{ .Values.workbench.theme.primary | quote }}
+    headerBg: {{ .Values.workbench.theme.headerBg | quote }}
+  header:
+    search:
+      enabled: true
+      widgetRef: "client-search"
+    notifications:
+      enabled: true
+    settings:
+      enabled: false
+    userMenu:
+      enabled: true
+      label: "Admin User"
+  contextBar:
+    enabled: true
+    widgetRef: "client-context"

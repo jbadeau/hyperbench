@@ -1,0 +1,44 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - portal.hyperbench.com
+  resources:
+  - actions
+  - navigationnodes
+  - serviceproxies
+  - widgets
+  - workbenches
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - portal.hyperbench.com
+  resources:
+  - actions/finalizers
+  - navigationnodes/finalizers
+  - serviceproxies/finalizers
+  - widgets/finalizers
+  - workbenches/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - portal.hyperbench.com
+  resources:
+  - actions/status
+  - navigationnodes/status
+  - serviceproxies/status
+  - widgets/status
+  - workbenches/status
+  verbs:
+  - get
+  - patch
+  - update

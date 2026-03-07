@@ -1,0 +1,17 @@
+apiVersion: kro.run/v1alpha1
+kind: WorkbenchPlatform
+metadata:
+  name: hyperbench
+  namespace: workbench
+spec:
+  title: "HyperBench Portal"
+  defaultPage: "/clients"
+  port: 3000
+  themePrimary: "#1e40af"
+  themeHeaderBg: "#1e293b"
+  todosFrontendUrl: "http://todos.todos.svc.cluster.local:3001"
+  todosApiUrl: "http://todos-api.todos.svc.cluster.local:8081"
+  clientsFrontendUrl: "http://clients.clients.svc.cluster.local:3002"
+  clientsApiUrl: "http://clients-api.clients.svc.cluster.local:8083"
+  onboardingFrontendUrl: "http://onboarding.onboarding.svc.cluster.local:3003"
+  onboardingApiUrl: "http://onboarding-api.onboarding.svc.cluster.local:8082"

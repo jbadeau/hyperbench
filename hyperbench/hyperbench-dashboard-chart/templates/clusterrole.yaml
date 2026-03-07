@@ -1,0 +1,10 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dashboard-crd-reader
+  labels:
+    {{- include "hyperbench-dashboard.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["portal.hyperbench.com"]
+    resources: ["workbenches", "navigationnodes", "widgets", "serviceproxies", "actions"]
+    verbs: ["get", "list", "watch"]

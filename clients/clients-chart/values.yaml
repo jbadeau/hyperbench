@@ -1,0 +1,13 @@
+frontend:
+  image: clients:latest
+  imagePullPolicy: Never
+  port: 3002
+  replicas: 1
+
+api:
+  image: clients-service:latest
+  imagePullPolicy: Never
+  port: 8083
+  replicas: 1
+
+apiUrl: "http://clients-api:8083"

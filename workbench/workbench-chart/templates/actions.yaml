@@ -1,0 +1,11 @@
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: Action
+metadata:
+  name: select-client
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "setContext"
+  setContext:
+    params:
+      selectedClientId: "{{`{{event.detail.clientId}}`}}"

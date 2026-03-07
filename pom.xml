@@ -18,14 +18,10 @@
     <name>hyperbench</name>
 
     <modules>
-        <module>hyperbench-shared</module>
-        <module>hyperbench-server-shared</module>
-        <module>hyperbench-server-hal-schema-forms</module>
-        <module>hyperbench-server-todos</module>
-        <module>hyperbench-server-onboarding</module>
-        <module>hyperbench-dashboard</module>
-        <module>hyperbench-todos</module>
-        <module>hyperbench-clients</module>
-        <module>hyperbench-onboarding</module>
+        <module>hyperbench/hyperbench-shared-service</module>
+        <module>hyperbench/hyperbench-hal-schema-forms-service</module>
+        <module>todos/todos-service</module>
+        <module>onboarding/onboarding-service</module>
+        <module>clients/clients-service</module>
     </modules>
 </project>

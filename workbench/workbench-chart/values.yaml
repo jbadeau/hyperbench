@@ -1,0 +1,18 @@
+workbench:
+  title: "HyperBench Portal"
+  defaultPage: "/clients"
+  port: 3000
+  theme:
+    primary: "#1e40af"
+    headerBg: "#1e293b"
+
+services:
+  todos:
+    frontendUrl: "http://todos.todos.svc.cluster.local:3001"
+    apiUrl: "http://todos-api.todos.svc.cluster.local:8081"
+  clients:
+    frontendUrl: "http://clients.clients.svc.cluster.local:3002"
+    apiUrl: "http://clients-api.clients.svc.cluster.local:8083"
+  onboarding:
+    frontendUrl: "http://onboarding.onboarding.svc.cluster.local:3003"
+    apiUrl: "http://onboarding-api.onboarding.svc.cluster.local:8082"

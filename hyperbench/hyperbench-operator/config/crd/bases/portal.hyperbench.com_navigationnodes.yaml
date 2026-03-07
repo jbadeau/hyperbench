@@ -1,0 +1,243 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: navigationnodes.portal.hyperbench.com
+spec:
+  group: portal.hyperbench.com
+  names:
+    kind: NavigationNode
+    listKind: NavigationNodeList
+    plural: navigationnodes
+    singular: navigationnode
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.title
+      name: Title
+      type: string
+    - jsonPath: .spec.type
+      name: Type
+      type: string
+    - jsonPath: .spec.parent
+      name: Parent
+      type: string
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: NavigationNode is the Schema for the navigationnodes API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: NavigationNodeSpec defines the desired state of NavigationNode.
+            properties:
+              alias:
+                description: Alias configures this node as an alias to another navigation
+                  node.
+                properties:
+                  targetRef:
+                    description: TargetRef references the target NavigationNode CR
+                      name.
+                    type: string
+                required:
+                - targetRef
+                type: object
+              icon:
+                description: Icon is an optional icon identifier for the navigation
+                  node.
+                type: string
+              link:
+                description: Link configures this node as an external link.
+                properties:
+                  target:
+                    description: Target is the link target (e.g. "_blank").
+                    type: string
+                  url:
+                    description: Url is the external URL.
+                    type: string
+                required:
+                - url
+                type: object
+              ordinal:
+                description: Ordinal controls the display order of the navigation
+                  node (lower values appear first).
+                type: integer
+              page:
+                description: Page configures this node as a page with layout and widgets.
+                properties:
+                  description:
+                    description: Description is an optional description of the page.
+                    type: string
+                  layout:
+                    description: Layout defines how widgets are arranged on the page.
+                    properties:
+                      areas:
+                        description: Areas defines CSS grid-template-areas values.
+                        items:
+                          type: string
+                        type: array
+                      columns:
+                        description: Columns defines the CSS grid-template-columns
+                          value.
+                        type: string
+                      direction:
+                        description: Direction is the split direction (split layout
+                          only).
+                        type: string
+                      gap:
+                        description: Gap defines the CSS gap value.
+                        type: string
+                      ratio:
+                        description: Ratio is the split ratio (split layout only).
+                        type: string
+                      rows:
+                        description: Rows defines the CSS grid-template-rows value.
+                        type: string
+                      slots:
+                        description: Slots maps named positions to widget references.
+                        items:
+                          description: SlotSpec maps a named slot to a widget reference.
+                          properties:
+                            area:
+                              description: Area is the CSS grid area name (grid layout).
+                              type: string
+                            label:
+                              description: Label is the tab label (tabs layout).
+                              type: string
+                            name:
+                              description: Name is the slot identifier.
+                              type: string
+                            pane:
+                              description: Pane specifies left or right pane (split
+                                layout).
+                              type: string
+                            widgetRef:
+                              description: WidgetRef references a Widget CR by name.
+                              type: string
+                          required:
+                          - name
+                          - widgetRef
+                          type: object
+                        type: array
+                      type:
+                        description: 'Type is the layout type: grid, single, split,
+                          or tabs.'
+                        type: string
+                    required:
+                    - type
+                    type: object
+                  path:
+                    description: Path is the URL path for the page.
+                    type: string
+                required:
+                - path
+                type: object
+              parent:
+                description: Parent references the parent NavigationNode CR name for
+                  nesting.
+                type: string
+              title:
+                description: Title is the display title of the navigation node.
+                type: string
+              type:
+                description: 'Type is the kind of navigation node: group, page, alias,
+                  or link.'
+                type: string
+            required:
+            - title
+            - type
+            type: object
+          status:
+            description: NavigationNodeStatus defines the observed state of NavigationNode.
+            properties:
+              conditions:
+                description: Conditions represent the latest available observations
+                  of the NavigationNode's state.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              phase:
+                description: Phase represents the current lifecycle phase of the NavigationNode.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

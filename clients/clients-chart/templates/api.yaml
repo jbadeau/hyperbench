@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clients-api
+  labels:
+    app.kubernetes.io/name: clients-api
+    {{- include "hyperbench-clients.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.api.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: clients-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: clients-api
+    spec:
+      containers:
+        - name: clients-api
+          image: {{ .Values.api.image }}
+          imagePullPolicy: {{ .Values.api.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.api.port }}
+          env:
+            - name: SERVER_PORT
+              value: "{{ .Values.api.port }}"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.api.port }}
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.api.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clients-api
+  labels:
+    app.kubernetes.io/name: clients-api
+    {{- include "hyperbench-clients.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/name: clients-api
+  ports:
+    - port: {{ .Values.api.port }}
+      targetPort: {{ .Values.api.port }}
