@@ -125,8 +125,8 @@ export function halToSpec(resource) {
             : `Step ${resource.step} of ${resource.totalSteps}`;
         const eid = id("progress");
         elements[eid] = {
-            type: "ProgressBar",
-            props: { value: pct, label },
+            type: "Progress",
+            props: { value: pct, label, max: null },
         };
         cardChildren.push(eid);
     }
@@ -134,19 +134,26 @@ export function halToSpec(resource) {
     if (resource.stepLabel) {
         const eid = id("step-label");
         elements[eid] = {
-            type: "StepLabel",
-            props: { text: resource.stepLabel },
+            type: "Heading",
+            props: { text: resource.stepLabel, level: "h2" },
         };
         cardChildren.push(eid);
     }
     // 3. Alert
     if (resource.alert) {
         const eid = id("alert");
+        const typeMap = {
+            success: "success",
+            warning: "warning",
+            danger: "error",
+            primary: "info",
+        };
         elements[eid] = {
             type: "Alert",
             props: {
-                message: resource.alert.message,
-                variant: resource.alert.variant,
+                title: resource.alert.message,
+                message: null,
+                type: typeMap[resource.alert.variant] || "info",
             },
         };
         cardChildren.push(eid);
@@ -168,12 +175,16 @@ export function halToSpec(resource) {
     // 5. Items table
     if (resource.items && resource.items.length > 0) {
         const cols = Object.keys(resource.items[0]).filter((k) => k !== "id" && k !== "unitPrice");
+        const columnLabels = cols.map((col) => col.charAt(0).toUpperCase() +
+            col.slice(1).replace(/([A-Z])/g, " $1"));
+        const rows = resource.items.map((row) => cols.map((col) => String(row[col] ?? "")));
         const eid = id("items-table");
         elements[eid] = {
-            type: "ItemsTable",
+            type: "Table",
             props: {
-                columns: cols,
-                rows: resource.items,
+                columns: columnLabels,
+                rows,
+                caption: null,
             },
         };
         cardChildren.push(eid);
@@ -324,7 +335,7 @@ export function halToSpec(resource) {
     const cardEid = id("card");
     elements[cardEid] = {
         type: "Card",
-        props: {},
+        props: { title: null, description: null, maxWidth: null, centered: null },
         children: cardChildren,
     };
     return { root: cardEid, elements };

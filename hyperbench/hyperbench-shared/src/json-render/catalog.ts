@@ -1,37 +1,22 @@
 import { defineCatalog } from "@json-render/core";
 import { schema } from "@json-render/react/schema";
+import { shadcnComponentDefinitions } from "@json-render/shadcn/catalog";
 import { z } from "zod";
 
 export const catalog = defineCatalog(schema, {
   components: {
-    Card: {
-      props: z.object({}),
-      slots: ["default"],
-      description: "Outer card wrapper with border and shadow",
-    },
-    ProgressBar: {
-      props: z.object({
-        value: z.number(),
-        label: z.string(),
-      }),
-      slots: [],
-      description: "Wizard progress bar with percentage",
-    },
-    StepLabel: {
-      props: z.object({
-        text: z.string(),
-      }),
-      slots: [],
-      description: "Step label paragraph",
-    },
-    Alert: {
-      props: z.object({
-        message: z.string(),
-        variant: z.string(),
-      }),
-      slots: [],
-      description: "Alert banner with variant styling",
-    },
+    // --- shadcn display components ---
+    Card: shadcnComponentDefinitions.Card,
+    Table: shadcnComponentDefinitions.Table,
+    Alert: shadcnComponentDefinitions.Alert,
+    Text: shadcnComponentDefinitions.Text,
+    Heading: shadcnComponentDefinitions.Heading,
+    Progress: shadcnComponentDefinitions.Progress,
+    Stack: shadcnComponentDefinitions.Stack,
+    Badge: shadcnComponentDefinitions.Badge,
+    Separator: shadcnComponentDefinitions.Separator,
+
+    // --- custom app components ---
     Summary: {
       props: z.object({
         entries: z.array(z.object({ key: z.string(), value: z.string() })),
@@ -39,14 +24,16 @@ export const catalog = defineCatalog(schema, {
       slots: [],
       description: "Key-value summary display",
     },
-    ItemsTable: {
+    ContextBar: {
       props: z.object({
-        columns: z.array(z.string()),
-        rows: z.array(z.record(z.string(), z.unknown())),
+        clientName: z.string(),
+        clientId: z.string(),
       }),
       slots: [],
-      description: "Data table for item listings",
+      description: "Context bar showing the currently selected client",
     },
+
+    // --- custom HTMX components ---
     Form: {
       props: z.object({
         action: z.string(),
@@ -112,14 +99,6 @@ export const catalog = defineCatalog(schema, {
       props: z.object({}),
       slots: ["default"],
       description: "Flex container for grouping buttons",
-    },
-    ContextBar: {
-      props: z.object({
-        clientName: z.string(),
-        clientId: z.string(),
-      }),
-      slots: [],
-      description: "Context bar showing the currently selected client",
     },
   },
   actions: {},

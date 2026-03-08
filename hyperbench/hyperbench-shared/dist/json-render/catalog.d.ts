@@ -24,31 +24,155 @@ export declare const catalog: import("@json-render/core").Catalog<{
 }, {
     components: {
         Card: {
-            props: z.ZodObject<{}, z.core.$strip>;
+            props: z.ZodObject<{
+                title: z.ZodNullable<z.ZodString>;
+                description: z.ZodNullable<z.ZodString>;
+                maxWidth: z.ZodNullable<z.ZodEnum<{
+                    sm: "sm";
+                    md: "md";
+                    lg: "lg";
+                    full: "full";
+                }>>;
+                centered: z.ZodNullable<z.ZodBoolean>;
+            }, z.core.$strip>;
             slots: string[];
             description: string;
+            example: {
+                title: string;
+                description: string;
+            };
         };
-        ProgressBar: {
+        Table: {
             props: z.ZodObject<{
-                value: z.ZodNumber;
-                label: z.ZodString;
+                columns: z.ZodArray<z.ZodString>;
+                rows: z.ZodArray<z.ZodArray<z.ZodString>>;
+                caption: z.ZodNullable<z.ZodString>;
             }, z.core.$strip>;
-            slots: never[];
             description: string;
-        };
-        StepLabel: {
-            props: z.ZodObject<{
-                text: z.ZodString;
-            }, z.core.$strip>;
-            slots: never[];
-            description: string;
+            example: {
+                columns: string[];
+                rows: string[][];
+            };
         };
         Alert: {
             props: z.ZodObject<{
-                message: z.ZodString;
-                variant: z.ZodString;
+                title: z.ZodString;
+                message: z.ZodNullable<z.ZodString>;
+                type: z.ZodNullable<z.ZodEnum<{
+                    success: "success";
+                    info: "info";
+                    warning: "warning";
+                    error: "error";
+                }>>;
             }, z.core.$strip>;
-            slots: never[];
+            description: string;
+            example: {
+                title: string;
+                message: string;
+                type: string;
+            };
+        };
+        Text: {
+            props: z.ZodObject<{
+                text: z.ZodString;
+                variant: z.ZodNullable<z.ZodEnum<{
+                    caption: "caption";
+                    body: "body";
+                    muted: "muted";
+                    lead: "lead";
+                    code: "code";
+                }>>;
+            }, z.core.$strip>;
+            description: string;
+            example: {
+                text: string;
+            };
+        };
+        Heading: {
+            props: z.ZodObject<{
+                text: z.ZodString;
+                level: z.ZodNullable<z.ZodEnum<{
+                    h1: "h1";
+                    h2: "h2";
+                    h3: "h3";
+                    h4: "h4";
+                }>>;
+            }, z.core.$strip>;
+            description: string;
+            example: {
+                text: string;
+                level: string;
+            };
+        };
+        Progress: {
+            props: z.ZodObject<{
+                value: z.ZodNumber;
+                max: z.ZodNullable<z.ZodNumber>;
+                label: z.ZodNullable<z.ZodString>;
+            }, z.core.$strip>;
+            description: string;
+            example: {
+                value: number;
+                max: number;
+                label: string;
+            };
+        };
+        Stack: {
+            props: z.ZodObject<{
+                direction: z.ZodNullable<z.ZodEnum<{
+                    horizontal: "horizontal";
+                    vertical: "vertical";
+                }>>;
+                gap: z.ZodNullable<z.ZodEnum<{
+                    sm: "sm";
+                    md: "md";
+                    lg: "lg";
+                    none: "none";
+                }>>;
+                align: z.ZodNullable<z.ZodEnum<{
+                    start: "start";
+                    center: "center";
+                    end: "end";
+                    stretch: "stretch";
+                }>>;
+                justify: z.ZodNullable<z.ZodEnum<{
+                    start: "start";
+                    center: "center";
+                    end: "end";
+                    between: "between";
+                    around: "around";
+                }>>;
+            }, z.core.$strip>;
+            slots: string[];
+            description: string;
+            example: {
+                direction: string;
+                gap: string;
+            };
+        };
+        Badge: {
+            props: z.ZodObject<{
+                text: z.ZodString;
+                variant: z.ZodNullable<z.ZodEnum<{
+                    default: "default";
+                    secondary: "secondary";
+                    destructive: "destructive";
+                    outline: "outline";
+                }>>;
+            }, z.core.$strip>;
+            description: string;
+            example: {
+                text: string;
+                variant: string;
+            };
+        };
+        Separator: {
+            props: z.ZodObject<{
+                orientation: z.ZodNullable<z.ZodEnum<{
+                    horizontal: "horizontal";
+                    vertical: "vertical";
+                }>>;
+            }, z.core.$strip>;
             description: string;
         };
         Summary: {
@@ -61,10 +185,10 @@ export declare const catalog: import("@json-render/core").Catalog<{
             slots: never[];
             description: string;
         };
-        ItemsTable: {
+        ContextBar: {
             props: z.ZodObject<{
-                columns: z.ZodArray<z.ZodString>;
-                rows: z.ZodArray<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+                clientName: z.ZodString;
+                clientId: z.ZodString;
             }, z.core.$strip>;
             slots: never[];
             description: string;
@@ -136,14 +260,6 @@ export declare const catalog: import("@json-render/core").Catalog<{
         ButtonGroup: {
             props: z.ZodObject<{}, z.core.$strip>;
             slots: string[];
-            description: string;
-        };
-        ContextBar: {
-            props: z.ZodObject<{
-                clientName: z.ZodString;
-                clientId: z.ZodString;
-            }, z.core.$strip>;
-            slots: never[];
             description: string;
         };
     };

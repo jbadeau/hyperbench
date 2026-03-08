@@ -38,8 +38,8 @@ docker build -t onboarding -f onboarding/onboarding/Dockerfile .
 docker build -t onboarding-service -f onboarding/onboarding-service/Dockerfile .
 """
 
-[tasks.install]
-description = "Load images, install CRDs, deploy services, then workbench"
+[tasks.deploy]
+description = "Deploy images, deploy CRDs, deploy services, then workbench"
 run = """
 kind load docker-image --name hyperbench \
   hyperbench-operator hyperbench-dashboard \

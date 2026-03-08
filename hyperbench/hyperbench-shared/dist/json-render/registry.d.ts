@@ -1,3 +1,2 @@
-import React from "react";
-export declare const HalRenderer: React.ComponentType<import("@json-render/react").CreateRendererProps>;
+export declare const registry: import("@json-render/react").ComponentRegistry;
 //# sourceMappingURL=registry.d.ts.map

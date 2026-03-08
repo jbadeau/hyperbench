@@ -2,8 +2,9 @@ import React from "react";
 import { renderToString } from "react-dom/server";
 import { validateSpec } from "@json-render/core";
 import type { Spec } from "@json-render/core";
+import { StateProvider, Renderer } from "@json-render/react";
 import type { HalSchemaFormsResource } from "./hal-schema-forms/types.js";
-import { HalRenderer } from "./json-render/registry.js";
+import { registry } from "./json-render/registry.js";
 import { halToSpec } from "./json-render/transformer.js";
 
 export function renderHalForms(resource: HalSchemaFormsResource): string {
@@ -17,7 +18,11 @@ export function renderHalForms(resource: HalSchemaFormsResource): string {
     );
   }
 
-  return renderToString(<HalRenderer spec={spec} />);
+  return renderToString(
+    <StateProvider initialState={{}}>
+      <Renderer spec={spec} registry={registry} />
+    </StateProvider>
+  );
 }
 
 export function renderSpec(spec: Spec): string {
@@ -25,5 +30,9 @@ export function renderSpec(spec: Spec): string {
   if (!validation.valid) {
     console.warn("[renderSpec] Spec validation issues:", validation.issues);
   }
-  return renderToString(<HalRenderer spec={spec} />);
+  return renderToString(
+    <StateProvider initialState={{}}>
+      <Renderer spec={spec} registry={registry} />
+    </StateProvider>
+  );
 }
