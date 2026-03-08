@@ -22,6 +22,8 @@ export class MutableCrdStore {
   /** Maps path prefix → target URL for dynamic proxy routing */
   proxyIndex: Map<string, string> = new Map();
 
+  private _rebuildTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor(initial: CrdStore) {
     this.workbench = initial.workbench;
 
@@ -46,54 +48,79 @@ export class MutableCrdStore {
 
   upsertNavigationNode(node: NavigationNode): void {
     this.navigationNodes.set(node.metadata.name, node);
-    this.rebuild();
+    this.scheduleRebuild();
   }
 
   deleteNavigationNode(name: string): void {
     this.navigationNodes.delete(name);
-    this.rebuild();
+    this.scheduleRebuild();
   }
 
   upsertWidget(widget: Widget): void {
     this.widgets.set(widget.metadata.name, widget);
-    this.rebuild();
+    this.scheduleRebuild();
   }
 
   deleteWidget(name: string): void {
     this.widgets.delete(name);
-    this.rebuild();
+    this.scheduleRebuild();
   }
 
   upsertServiceProxy(sp: ServiceProxy): void {
     this.serviceProxies.set(sp.metadata.name, sp);
-    this.rebuild();
+    this.scheduleRebuild();
   }
 
   deleteServiceProxy(name: string): void {
     this.serviceProxies.delete(name);
-    this.rebuild();
+    this.scheduleRebuild();
   }
 
   upsertAction(action: Action): void {
     this.actions.set(action.metadata.name, action);
-    this.rebuild();
+    this.scheduleRebuild();
   }
 
   deleteAction(name: string): void {
     this.actions.delete(name);
-    this.rebuild();
+    this.scheduleRebuild();
   }
 
   updateWorkbench(wb: Workbench): void {
     this.workbench = wb;
-    this.rebuild();
+    this.scheduleRebuild();
+  }
+
+  /** Debounced rebuild — coalesces rapid CRD watch events into a single rebuild */
+  private scheduleRebuild(): void {
+    if (this._rebuildTimer) clearTimeout(this._rebuildTimer);
+    this._rebuildTimer = setTimeout(() => {
+      this._rebuildTimer = null;
+      this.rebuild();
+    }, 50);
   }
 
   // ── Rebuild derived state ──
 
   rebuild(): void {
-    const navNodes = [...this.navigationNodes.values()]
+    const sorted = [...this.navigationNodes.values()]
       .sort((a, b) => (a.spec.ordinal ?? 0) - (b.spec.ordinal ?? 0));
+
+    // Resolve alias nodes → synthetic page nodes with the target's page spec
+    const navNodes = sorted.map(node => {
+      if (node.spec.type !== "alias" || !node.spec.alias) return node;
+      const target = this.navigationNodes.get(node.spec.alias.targetRef);
+      if (!target || target.spec.type !== "page" || !target.spec.page) return node;
+      return {
+        metadata: node.metadata,
+        spec: {
+          ...node.spec,
+          type: "page" as const,
+          page: target.spec.page,
+          alias: undefined,
+        },
+      };
+    });
 
     // Shell HTML
     this.shellHtml = htmlShell(this.workbench, navNodes, this.widgets);

@@ -57,6 +57,37 @@ async function main() {
         console.log(`Dashboard gateway listening on http://0.0.0.0:${PORT}`);
     });
 }
+function renderSlot(slot, widget, extraStyle) {
+    const spec = widget.spec;
+    const style = extraStyle ? ` style="${extraStyle}"` : "";
+    if (spec.type === "server" && spec.server) {
+        const endpoint = spec.server.endpoint;
+        const swap = spec.server.swap ?? "innerHTML";
+        const trigger = spec.server.trigger ?? "load";
+        return `<div${style} hx-get="${endpoint}" hx-trigger="${trigger}" hx-swap="${swap}"></div>`;
+    }
+    if (spec.type === "iframe" && spec.iframe) {
+        const height = spec.iframe.height ?? "400px";
+        const sandbox = spec.iframe.sandbox ? ` sandbox="${spec.iframe.sandbox}"` : "";
+        return `<iframe src="${spec.iframe.src}"${sandbox} style="width:100%;height:${height};border:none;${extraStyle ?? ""}" loading="lazy"></iframe>`;
+    }
+    if (spec.type === "client" && spec.client) {
+        const tag = spec.client.element ?? spec.client.component ?? "div";
+        const attrs = [];
+        if (spec.client.props) {
+            for (const [k, v] of Object.entries(spec.client.props)) {
+                attrs.push(`data-prop-${k}="${v}"`);
+            }
+        }
+        if (spec.client.propsFromContext) {
+            for (const [k, v] of Object.entries(spec.client.propsFromContext)) {
+                attrs.push(`data-context-key-${k}="${v}"`);
+            }
+        }
+        return `<${tag}${style}${attrs.length ? " " + attrs.join(" ") : ""}></${tag}>`;
+    }
+    return "";
+}
 function renderPageLayout(node, widgets) {
     const layout = node.spec.page?.layout;
     if (!layout || !layout.slots)
@@ -77,13 +108,10 @@ function renderPageLayout(node, widgets) {
         ].filter(Boolean).join(";");
         const slotHtml = layout.slots.map(slot => {
             const widget = widgets.get(slot.widgetRef);
-            if (!widget?.spec.server)
+            if (!widget)
                 return "";
-            const areaStyle = slot.area ? `grid-area:${slot.area};` : "";
-            const endpoint = widget.spec.server.endpoint;
-            const swap = widget.spec.server.swap ?? "innerHTML";
-            const trigger = widget.spec.server.trigger ?? "load";
-            return `<div style="overflow:hidden;${areaStyle}" hx-get="${endpoint}" hx-trigger="${trigger}" hx-swap="${swap}"></div>`;
+            const areaStyle = slot.area ? `overflow:hidden;grid-area:${slot.area};` : "overflow:hidden;";
+            return renderSlot(slot, widget, areaStyle);
         }).join("\n      ");
         return `
     <div class="dash-grid" style="${style}">
@@ -93,12 +121,9 @@ function renderPageLayout(node, widgets) {
     // Fallback for other layout types — render slots sequentially
     const slotHtml = layout.slots.map(slot => {
         const widget = widgets.get(slot.widgetRef);
-        if (!widget?.spec.server)
+        if (!widget)
             return "";
-        const endpoint = widget.spec.server.endpoint;
-        const swap = widget.spec.server.swap ?? "innerHTML";
-        const trigger = widget.spec.server.trigger ?? "load";
-        return `<div hx-get="${endpoint}" hx-trigger="${trigger}" hx-swap="${swap}"></div>`;
+        return renderSlot(slot, widget);
     }).join("\n    ");
     return `
     <div>

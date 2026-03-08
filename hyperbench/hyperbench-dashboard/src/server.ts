@@ -3,7 +3,7 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import { loadCrds } from "./k8s/client.js";
 import { MutableCrdStore } from "./k8s/crd-store.js";
 import { startCrdWatchers } from "./k8s/watcher.js";
-import type { NavigationNode, Widget } from "./k8s/types.js";
+import type { NavigationNode, Widget, SlotSpec } from "./k8s/types.js";
 
 async function main() {
   const app = express();
@@ -68,6 +68,42 @@ async function main() {
   });
 }
 
+function renderSlot(slot: SlotSpec, widget: Widget, extraStyle?: string): string {
+  const spec = widget.spec;
+  const style = extraStyle ? ` style="${extraStyle}"` : "";
+
+  if (spec.type === "server" && spec.server) {
+    const endpoint = spec.server.endpoint;
+    const swap = spec.server.swap ?? "innerHTML";
+    const trigger = spec.server.trigger ?? "load";
+    return `<div${style} hx-get="${endpoint}" hx-trigger="${trigger}" hx-swap="${swap}"></div>`;
+  }
+
+  if (spec.type === "iframe" && spec.iframe) {
+    const height = spec.iframe.height ?? "400px";
+    const sandbox = spec.iframe.sandbox ? ` sandbox="${spec.iframe.sandbox}"` : "";
+    return `<iframe src="${spec.iframe.src}"${sandbox} style="width:100%;height:${height};border:none;${extraStyle ?? ""}" loading="lazy"></iframe>`;
+  }
+
+  if (spec.type === "client" && spec.client) {
+    const tag = spec.client.element ?? spec.client.component ?? "div";
+    const attrs: string[] = [];
+    if (spec.client.props) {
+      for (const [k, v] of Object.entries(spec.client.props)) {
+        attrs.push(`data-prop-${k}="${v}"`);
+      }
+    }
+    if (spec.client.propsFromContext) {
+      for (const [k, v] of Object.entries(spec.client.propsFromContext)) {
+        attrs.push(`data-context-key-${k}="${v}"`);
+      }
+    }
+    return `<${tag}${style}${attrs.length ? " " + attrs.join(" ") : ""}></${tag}>`;
+  }
+
+  return "";
+}
+
 function renderPageLayout(node: NavigationNode, widgets: Map<string, Widget>): string {
   const layout = node.spec.page?.layout;
   if (!layout || !layout.slots) return "";
@@ -90,12 +126,9 @@ function renderPageLayout(node: NavigationNode, widgets: Map<string, Widget>): s
 
     const slotHtml = layout.slots.map(slot => {
       const widget = widgets.get(slot.widgetRef);
-      if (!widget?.spec.server) return "";
-      const areaStyle = slot.area ? `grid-area:${slot.area};` : "";
-      const endpoint = widget.spec.server.endpoint;
-      const swap = widget.spec.server.swap ?? "innerHTML";
-      const trigger = widget.spec.server.trigger ?? "load";
-      return `<div style="overflow:hidden;${areaStyle}" hx-get="${endpoint}" hx-trigger="${trigger}" hx-swap="${swap}"></div>`;
+      if (!widget) return "";
+      const areaStyle = slot.area ? `overflow:hidden;grid-area:${slot.area};` : "overflow:hidden;";
+      return renderSlot(slot, widget, areaStyle);
     }).join("\n      ");
 
     return `
@@ -107,11 +140,8 @@ function renderPageLayout(node: NavigationNode, widgets: Map<string, Widget>): s
   // Fallback for other layout types — render slots sequentially
   const slotHtml = layout.slots.map(slot => {
     const widget = widgets.get(slot.widgetRef);
-    if (!widget?.spec.server) return "";
-    const endpoint = widget.spec.server.endpoint;
-    const swap = widget.spec.server.swap ?? "innerHTML";
-    const trigger = widget.spec.server.trigger ?? "load";
-    return `<div hx-get="${endpoint}" hx-trigger="${trigger}" hx-swap="${swap}"></div>`;
+    if (!widget) return "";
+    return renderSlot(slot, widget);
   }).join("\n    ");
 
   return `

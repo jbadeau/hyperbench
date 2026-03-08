@@ -6,14 +6,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
 public class WorkbenchContextFilter implements Filter {
     private static final String HEADER_PREFIX = "x-context-";
 

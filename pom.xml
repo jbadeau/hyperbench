@@ -17,6 +17,10 @@
     <packaging>pom</packaging>
     <name>hyperbench</name>
 
+    <properties>
+        <kotlin.version>2.1.10</kotlin.version>
+    </properties>
+
     <modules>
         <module>hyperbench/hyperbench-shared-service</module>
         <module>hyperbench/hyperbench-hal-schema-forms-service</module>

@@ -28,23 +28,23 @@ import (
 
 // portalConfig is the top-level resolved configuration written to the ConfigMap.
 type portalConfig struct {
-	Title       string                     `json:"title"`
-	Port        int32                      `json:"port,omitempty"`
+	Title       string                      `json:"title"`
+	Port        int32                       `json:"port,omitempty"`
 	Branding    portalv1alpha1.BrandingSpec `json:"branding,omitempty"`
 	Theme       portalv1alpha1.ThemeSpec    `json:"theme,omitempty"`
-	Header      resolvedHeader             `json:"header,omitempty"`
-	ContextBar  resolvedContextBar         `json:"contextBar,omitempty"`
-	DefaultPage string                     `json:"defaultPage"`
-	Services    []resolvedService          `json:"services"`
-	Navigation  []*resolvedNavNode         `json:"navigation"`
-	Widgets     map[string]resolvedWidget  `json:"widgets"`
-	Actions     map[string]resolvedAction  `json:"actions"`
+	Header      resolvedHeader              `json:"header,omitempty"`
+	ContextBar  resolvedContextBar          `json:"contextBar,omitempty"`
+	DefaultPage string                      `json:"defaultPage"`
+	Services    []resolvedService           `json:"services"`
+	Navigation  []*resolvedNavNode          `json:"navigation"`
+	Widgets     map[string]resolvedWidget   `json:"widgets"`
+	Actions     map[string]resolvedAction   `json:"actions"`
 }
 
 type resolvedHeader struct {
-	Search        resolvedHeaderFeature      `json:"search,omitempty"`
-	Notifications resolvedHeaderFeature      `json:"notifications,omitempty"`
-	Settings      resolvedHeaderFeature      `json:"settings,omitempty"`
+	Search        resolvedHeaderFeature       `json:"search,omitempty"`
+	Notifications resolvedHeaderFeature       `json:"notifications,omitempty"`
+	Settings      resolvedHeaderFeature       `json:"settings,omitempty"`
 	UserMenu      portalv1alpha1.UserMenuSpec `json:"userMenu,omitempty"`
 }
 
@@ -59,8 +59,8 @@ type resolvedContextBar struct {
 }
 
 type resolvedService struct {
-	Name        string                        `json:"name"`
-	DisplayName string                        `json:"displayName"`
+	Name        string                         `json:"name"`
+	DisplayName string                         `json:"displayName"`
 	Frontend    portalv1alpha1.EndpointSpec    `json:"frontend,omitempty"`
 	Api         portalv1alpha1.EndpointSpec    `json:"api,omitempty"`
 	Proxy       []portalv1alpha1.ProxyRule     `json:"proxy"`
@@ -68,14 +68,14 @@ type resolvedService struct {
 }
 
 type resolvedNavNode struct {
-	Name     string             `json:"name"`
-	Type     string             `json:"type"`
-	Title    string             `json:"title"`
-	Icon     string             `json:"icon,omitempty"`
-	Page     *resolvedPage      `json:"page,omitempty"`
-	Alias    *resolvedAlias     `json:"alias,omitempty"`
+	Name     string                   `json:"name"`
+	Type     string                   `json:"type"`
+	Title    string                   `json:"title"`
+	Icon     string                   `json:"icon,omitempty"`
+	Page     *resolvedPage            `json:"page,omitempty"`
+	Alias    *resolvedAlias           `json:"alias,omitempty"`
 	Link     *portalv1alpha1.LinkSpec `json:"link,omitempty"`
-	Children []*resolvedNavNode `json:"children,omitempty"`
+	Children []*resolvedNavNode       `json:"children,omitempty"`
 }
 
 type resolvedAlias struct {
@@ -108,25 +108,25 @@ type resolvedSlot struct {
 }
 
 type resolvedWidget struct {
-	Name        string                             `json:"name"`
-	Type        string                             `json:"type"`
-	Title       string                             `json:"title"`
-	Description string                             `json:"description,omitempty"`
-	Context     *portalv1alpha1.ContextContract    `json:"context,omitempty"`
-	Server      *portalv1alpha1.ServerWidgetSpec    `json:"server,omitempty"`
-	Iframe      *portalv1alpha1.IframeWidgetSpec    `json:"iframe,omitempty"`
-	Client      *portalv1alpha1.ClientWidgetSpec    `json:"client,omitempty"`
-	Actions     map[string]resolvedAction           `json:"actions,omitempty"`
+	Name        string                           `json:"name"`
+	Type        string                           `json:"type"`
+	Title       string                           `json:"title"`
+	Description string                           `json:"description,omitempty"`
+	Context     *portalv1alpha1.ContextContract  `json:"context,omitempty"`
+	Server      *portalv1alpha1.ServerWidgetSpec `json:"server,omitempty"`
+	Iframe      *portalv1alpha1.IframeWidgetSpec `json:"iframe,omitempty"`
+	Client      *portalv1alpha1.ClientWidgetSpec `json:"client,omitempty"`
+	Actions     map[string]resolvedAction        `json:"actions,omitempty"`
 }
 
 type resolvedAction struct {
-	Name       string                          `json:"name"`
-	Type       string                          `json:"type"`
-	SetContext *portalv1alpha1.SetContextSpec   `json:"setContext,omitempty"`
-	Navigate   *portalv1alpha1.NavigateSpec     `json:"navigate,omitempty"`
-	OpenDrawer *resolvedOpenDrawer             `json:"openDrawer,omitempty"`
-	OpenModal  *resolvedOpenModal              `json:"openModal,omitempty"`
-	Rest       *resolvedRest                   `json:"rest,omitempty"`
+	Name       string                         `json:"name"`
+	Type       string                         `json:"type"`
+	SetContext *portalv1alpha1.SetContextSpec `json:"setContext,omitempty"`
+	Navigate   *portalv1alpha1.NavigateSpec   `json:"navigate,omitempty"`
+	OpenDrawer *resolvedOpenDrawer            `json:"openDrawer,omitempty"`
+	OpenModal  *resolvedOpenModal             `json:"openModal,omitempty"`
+	Rest       *resolvedRest                  `json:"rest,omitempty"`
 }
 
 type resolvedOpenDrawer struct {

@@ -170,6 +170,6 @@ function renderDeadlines() {
         .join("");
 }
 const PORT = parseInt(process.env.PORT || "3001", 10);
-app.listen(PORT, () => {
-    console.log(`Todos service listening on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Todos service listening on http://0.0.0.0:${PORT}`);
 });

@@ -11,6 +11,7 @@ export class MutableCrdStore {
     pageIndex = new Map();
     /** Maps path prefix → target URL for dynamic proxy routing */
     proxyIndex = new Map();
+    _rebuildTimer = null;
     constructor(initial) {
         this.workbench = initial.workbench;
         this.navigationNodes = new Map();
@@ -28,44 +29,70 @@ export class MutableCrdStore {
     // ── Mutation helpers ──
     upsertNavigationNode(node) {
         this.navigationNodes.set(node.metadata.name, node);
-        this.rebuild();
+        this.scheduleRebuild();
     }
     deleteNavigationNode(name) {
         this.navigationNodes.delete(name);
-        this.rebuild();
+        this.scheduleRebuild();
     }
     upsertWidget(widget) {
         this.widgets.set(widget.metadata.name, widget);
-        this.rebuild();
+        this.scheduleRebuild();
     }
     deleteWidget(name) {
         this.widgets.delete(name);
-        this.rebuild();
+        this.scheduleRebuild();
     }
     upsertServiceProxy(sp) {
         this.serviceProxies.set(sp.metadata.name, sp);
-        this.rebuild();
+        this.scheduleRebuild();
     }
     deleteServiceProxy(name) {
         this.serviceProxies.delete(name);
-        this.rebuild();
+        this.scheduleRebuild();
     }
     upsertAction(action) {
         this.actions.set(action.metadata.name, action);
-        this.rebuild();
+        this.scheduleRebuild();
     }
     deleteAction(name) {
         this.actions.delete(name);
-        this.rebuild();
+        this.scheduleRebuild();
     }
     updateWorkbench(wb) {
         this.workbench = wb;
-        this.rebuild();
+        this.scheduleRebuild();
+    }
+    /** Debounced rebuild — coalesces rapid CRD watch events into a single rebuild */
+    scheduleRebuild() {
+        if (this._rebuildTimer)
+            clearTimeout(this._rebuildTimer);
+        this._rebuildTimer = setTimeout(() => {
+            this._rebuildTimer = null;
+            this.rebuild();
+        }, 50);
     }
     // ── Rebuild derived state ──
     rebuild() {
-        const navNodes = [...this.navigationNodes.values()]
+        const sorted = [...this.navigationNodes.values()]
             .sort((a, b) => (a.spec.ordinal ?? 0) - (b.spec.ordinal ?? 0));
+        // Resolve alias nodes → synthetic page nodes with the target's page spec
+        const navNodes = sorted.map(node => {
+            if (node.spec.type !== "alias" || !node.spec.alias)
+                return node;
+            const target = this.navigationNodes.get(node.spec.alias.targetRef);
+            if (!target || target.spec.type !== "page" || !target.spec.page)
+                return node;
+            return {
+                metadata: node.metadata,
+                spec: {
+                    ...node.spec,
+                    type: "page",
+                    page: target.spec.page,
+                    alias: undefined,
+                },
+            };
+        });
         // Shell HTML
         this.shellHtml = htmlShell(this.workbench, navNodes, this.widgets);
         // Page index: clean path → NavigationNode

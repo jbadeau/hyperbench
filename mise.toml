@@ -10,10 +10,15 @@ tilt = "latest"
 operator-sdk = "latest"
 kubebuilder = "latest"
 
-# ── Build ────────────────────────────────────────────────────────────
+[tasks.init]
+description = "Recreate kind cluster"
+run = """
+kind delete cluster --name hyperbench 2>/dev/null || true
+kind create cluster --name hyperbench
+"""
 
 [tasks.build]
-description = "Build everything"
+description = "Build all code and Docker images"
 run = """
 npm install
 npm run build --workspace=hyperbench/hyperbench-shared
@@ -22,40 +27,45 @@ npm run build --workspace=todos/todos
 npm run build --workspace=clients/clients
 npm run build --workspace=onboarding/onboarding
 mvn clean package
+cd hyperbench/hyperbench-operator && make manifests generate && CGO_ENABLED=0 GOOS=linux go build -a -o bin/manager cmd/main.go && cd ../..
+docker build -t hyperbench-operator -f hyperbench/hyperbench-operator/Dockerfile hyperbench/hyperbench-operator
+docker build -t hyperbench-dashboard -f hyperbench/hyperbench-dashboard/Dockerfile .
+docker build -t todos -f todos/todos/Dockerfile .
+docker build -t todos-service -f todos/todos-service/Dockerfile .
+docker build -t clients -f clients/clients/Dockerfile .
+docker build -t clients-service -f clients/clients-service/Dockerfile .
+docker build -t onboarding -f onboarding/onboarding/Dockerfile .
+docker build -t onboarding-service -f onboarding/onboarding-service/Dockerfile .
 """
 
-[tasks.test]
-description = "Run all tests"
-run = "mvn test"
+[tasks.install]
+description = "Load images, install CRDs, deploy services, then workbench"
+run = """
+kind load docker-image --name hyperbench \
+  hyperbench-operator hyperbench-dashboard \
+  todos todos-service \
+  clients clients-service \
+  onboarding onboarding-service
 
-# ── Tilt ─────────────────────────────────────────────────────────────
+kubectl apply -k hyperbench/hyperbench-operator/config/crd
 
-[tasks."tilt:up"]
-description = "Start Tilt dev loop (builds, deploys, watches)"
+helm upgrade --install hyperbench-operator ./hyperbench/hyperbench-operator-chart -n hyperbench-operator --create-namespace --set imagePullPolicy=Never
+helm upgrade --install todos ./todos/todos-chart -n todos --create-namespace
+helm upgrade --install clients ./clients/clients-chart -n clients --create-namespace
+helm upgrade --install onboarding ./onboarding/onboarding-chart -n onboarding --create-namespace
+helm upgrade --install dashboard ./hyperbench/hyperbench-dashboard-chart -n dashboard --create-namespace
+
+helm upgrade --install workbench ./workbench/workbench-chart -n workbench --create-namespace
+"""
+
+[tasks.dev]
+description = "Start Tilt dev loop"
 run = "tilt up"
 
-[tasks."tilt:down"]
-description = "Stop Tilt and tear down deployed resources"
-run = "tilt down"
-
-# ── Kubernetes ───────────────────────────────────────────────────────
-
-[tasks."k8s:up"]
-description = "Create kind cluster"
-run = "kind create cluster --name hyperbench"
-
-[tasks."k8s:down"]
-description = "Delete kind cluster"
-run = "kind delete cluster --name hyperbench"
-
-[tasks."k8s:status"]
+[tasks.status]
 description = "Show pods and CRs"
 run = """
-kubectl get pods -A | grep -E 'hyperbench-operator|todos|clients|onboarding|dashboard|workbench'
+kubectl get pods -A | grep -E 'hyperbench-operator|todos|clients|onboarding|dashboard|workbench' || echo "No pods found"
 echo ""
 kubectl get workbenches,widgets,actions,navigationnodes,serviceproxies -A 2>/dev/null || echo "CRDs not yet available"
 """
-
-[tasks."k8s:dashboard"]
-description = "Port-forward dashboard to localhost:3000"
-run = "kubectl port-forward -n dashboard svc/dashboard 3000:3000"

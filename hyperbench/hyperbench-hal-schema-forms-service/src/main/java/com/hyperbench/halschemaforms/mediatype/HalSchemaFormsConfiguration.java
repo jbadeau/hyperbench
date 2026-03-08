@@ -1,14 +1,12 @@
 package com.hyperbench.halschemaforms.mediatype;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.config.HypermediaMappingInformation;
 import org.springframework.http.MediaType;
 
 import java.util.List;
 
-@Configuration
 public class HalSchemaFormsConfiguration implements HypermediaMappingInformation {
 
     @Override
