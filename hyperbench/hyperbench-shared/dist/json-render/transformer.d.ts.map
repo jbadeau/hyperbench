@@ -1,1 +1,0 @@
-{"version":3,"file":"transformer.d.ts","sourceRoot":"","sources":["../../src/json-render/transformer.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,IAAI,EAAE,MAAM,mBAAmB,CAAC;AAC9C,OAAO,KAAK,EACV,sBAAsB,EAEvB,MAAM,8BAA8B,CAAC;AA+HtC;;GAEG;AACH,wBAAgB,SAAS,CAAC,QAAQ,EAAE,sBAAsB,GAAG,IAAI,CA0QhE"}
