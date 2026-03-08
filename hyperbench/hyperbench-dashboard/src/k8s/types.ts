@@ -27,10 +27,6 @@ export interface WorkbenchSpec {
     logo?: string;
     favicon?: string;
   };
-  theme?: {
-    primary?: string;
-    headerBg?: string;
-  };
   header?: {
     search?: HeaderFeature;
     notifications?: HeaderFeature;

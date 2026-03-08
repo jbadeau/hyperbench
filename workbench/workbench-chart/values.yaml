@@ -1,10 +1,7 @@
 workbench:
-  title: "HyperBench Portal"
+  title: "Hyperbench"
   defaultPage: "/clients"
   port: 3000
-  theme:
-    primary: "#1e40af"
-    headerBg: "#1e293b"
 
 services:
   todos:

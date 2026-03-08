@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: workbench-sample
 spec:
-  title: "HyperBench Portal"
+  title: "Hyperbench"
   port: 3000
   defaultPage: "/clients"
   branding:

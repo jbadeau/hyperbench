@@ -4,11 +4,9 @@ metadata:
   name: hyperbench
   namespace: workbench
 spec:
-  title: "HyperBench Portal"
+  title: "Hyperbench"
   defaultPage: "/clients"
   port: 3000
-  themePrimary: "#1e40af"
-  themeHeaderBg: "#1e293b"
   todosFrontendUrl: "http://todos.todos.svc.cluster.local:3001"
   todosApiUrl: "http://todos-api.todos.svc.cluster.local:8081"
   clientsFrontendUrl: "http://clients.clients.svc.cluster.local:3002"

@@ -8,29 +8,29 @@ function renderSearch(workbench, widgets) {
     const endpoint = widget.spec.server.endpoint;
     const placeholder = widget.spec.title ?? "";
     return `
-    <div class="relative mx-8" id="header-search">
-      <sl-icon name="search" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none z-10"></sl-icon>
+    <div class="relative" id="header-search">
+      <i data-lucide="search" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none z-10"></i>
       <input type="text" id="header-search-input" placeholder="${placeholder}"
              autocomplete="off"
              hx-get="${endpoint}" hx-target="#header-search-results" hx-swap="innerHTML"
              hx-trigger="input changed delay:200ms, focus" hx-params="*"
              name="q"
-             class="bg-white/5 border border-white/10 rounded-md py-1.5 pl-8 pr-3 text-slate-200 text-sm w-72 outline-none placeholder:text-slate-500 focus:bg-white/10 focus:border-white/20 transition" />
-      <div id="header-search-results" class="absolute top-full left-0 right-0 mt-1 bg-slate-800 rounded-lg shadow-lg shadow-black/40 border border-slate-700 z-50 max-h-80 overflow-y-auto hidden"></div>
+             class="bg-input border border-border rounded-md py-1.5 pl-8 pr-3 text-foreground text-sm w-72 outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring transition" />
+      <div id="header-search-results" class="absolute top-full left-0 right-0 mt-1 bg-popover text-popover-foreground rounded-xl shadow-lg border border-border z-50 max-h-80 overflow-y-auto hidden"></div>
     </div>`;
 }
 function renderHeaderActions(workbench) {
     const header = workbench.spec.header;
     const parts = [];
     if (header?.notifications?.enabled) {
-        parts.push(`<sl-icon-button name="bell" label="Notifications" class="text-slate-400 text-lg hover:text-slate-200 relative"></sl-icon-button>`);
+        parts.push(`<button type="button" class="text-muted-foreground hover:text-foreground p-1.5 rounded-md hover:bg-accent transition" aria-label="Notifications"><i data-lucide="bell" class="w-5 h-5"></i></button>`);
     }
     if (header?.settings?.enabled) {
-        parts.push(`<sl-icon-button name="gear" label="Settings" class="text-slate-400 text-lg hover:text-slate-200"></sl-icon-button>`);
+        parts.push(`<button type="button" class="text-muted-foreground hover:text-foreground p-1.5 rounded-md hover:bg-accent transition" aria-label="Settings"><i data-lucide="settings" class="w-5 h-5"></i></button>`);
     }
     if (parts.length === 0)
         return "";
-    return `<div class="flex items-center gap-4">${parts.join("\n")}</div>`;
+    return `<div class="flex items-center gap-1">${parts.join("\n")}</div>`;
 }
 function renderUserMenu(workbench) {
     const userMenu = workbench.spec.header?.userMenu;
@@ -39,9 +39,13 @@ function renderUserMenu(workbench) {
     const label = userMenu.label ?? "";
     const initials = label.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
     return `
-    <div class="flex items-center gap-2 text-slate-300 text-sm ml-4">
-      <sl-avatar initials="${initials}" style="--size: 2rem;"></sl-avatar>
-      <span>${label}</span>
+    <div class="border-t border-sidebar-border p-4">
+      <div class="flex items-center gap-3 text-sidebar-foreground text-sm">
+        <div class="w-8 h-8 rounded-lg bg-sidebar-accent flex items-center justify-center text-xs font-medium text-sidebar-accent-foreground">${initials}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate">${label}</div>
+        </div>
+      </div>
     </div>`;
 }
 function renderContextBar(workbench, widgets) {
@@ -54,7 +58,7 @@ function renderContextBar(workbench, widgets) {
     const endpoint = widget.spec.server.endpoint;
     const trigger = widget.spec.server.trigger ?? "load";
     return `
-  <div id="context-bar" class="border-b border-slate-800"
+  <div id="context-bar" class="border-b border-border"
        hx-get="${endpoint}"
        hx-trigger="${trigger}"
        hx-swap="innerHTML">
@@ -75,15 +79,15 @@ function resolveTargetPath(node, nodeMap) {
 function renderNavNode(node, nodeMap) {
     const spec = node.spec;
     if (spec.type === "group") {
-        return `<div class="text-xs font-semibold uppercase tracking-wide text-slate-500 px-3 mb-1.5">${spec.title}</div>`;
+        return `<div class="text-xs font-medium text-muted-foreground px-3 mb-1.5">${spec.title}</div>`;
     }
     if (spec.type === "page" || spec.type === "alias") {
         const path = resolveTargetPath(node, nodeMap);
         if (!path)
             return "";
-        const icon = spec.icon ? `<sl-icon name="${spec.icon}"></sl-icon> ` : "";
+        const icon = spec.icon ? `<i data-lucide="${spec.icon}" class="w-4 h-4"></i> ` : "";
         return `
-      <button class="nav-btn flex items-center gap-2 py-1.5 px-3 rounded-md text-slate-400 hover:bg-slate-800 hover:text-slate-200 text-sm w-full text-left transition"
+      <button class="nav-btn flex items-center gap-2 py-1.5 px-3 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sm w-full text-left transition"
               data-nav="${path}"
               hx-get="${path}" hx-target="#content" hx-swap="innerHTML" hx-push-url="${path}">
         ${icon}${spec.title}
@@ -92,10 +96,10 @@ function renderNavNode(node, nodeMap) {
     if (spec.type === "link" && spec.link) {
         const target = spec.link.target ? ` target="${spec.link.target}"` : "";
         const rel = spec.link.target ? ` rel="noopener noreferrer"` : "";
-        const icon = spec.icon ? `<sl-icon name="${spec.icon}"></sl-icon> ` : "";
+        const icon = spec.icon ? `<i data-lucide="${spec.icon}" class="w-4 h-4"></i> ` : "";
         return `
       <a href="${spec.link.url}"${target}${rel}
-         class="flex items-center gap-2 py-1.5 px-3 rounded-md text-slate-400 hover:bg-slate-800 hover:text-slate-200 text-sm w-full text-left transition no-underline">
+         class="flex items-center gap-2 py-1.5 px-3 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sm w-full text-left transition no-underline">
         ${icon}${spec.title}
       </a>`;
     }
@@ -106,7 +110,6 @@ function renderSidebar(navNodes) {
     for (const n of navNodes) {
         nodeMap.set(n.metadata.name, n);
     }
-    // Group nodes by parent
     const topLevel = navNodes.filter(n => !n.spec.parent);
     const children = new Map();
     for (const n of navNodes) {
@@ -122,79 +125,140 @@ function renderSidebar(navNodes) {
         if (node.spec.type === "group") {
             const groupHtml = renderNavNode(node, nodeMap);
             const childHtml = kids.map(child => renderNavNode(child, nodeMap)).join("\n");
-            sections.push(`<div class="px-3 mb-5">${groupHtml}${childHtml}</div>`);
+            sections.push(`<div class="px-3 mb-4">${groupHtml}${childHtml}</div>`);
         }
         else {
-            // Top-level page/link without a group
             const html = renderNavNode(node, nodeMap);
-            sections.push(`<div class="px-3 mb-5">${html}</div>`);
+            sections.push(`<div class="px-3 mb-4">${html}</div>`);
         }
     }
     return sections.join("\n");
 }
 export function htmlShell(workbench, navNodes, widgets) {
     const title = workbench.spec.title;
-    const headerBg = workbench.spec.theme?.headerBg ?? "";
-    const primary = workbench.spec.theme?.primary ?? "";
     return `<!DOCTYPE html>
-<html lang="en" class="sl-theme-dark">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>${title}</title>
 
-  <!-- Shoelace (dark theme) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/dark.css" />
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind CSS v4 -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      --radius: 0.625rem;
+      --color-background: oklch(0.145 0 0);
+      --color-foreground: oklch(0.985 0 0);
+      --color-card: oklch(0.205 0 0);
+      --color-card-foreground: oklch(0.985 0 0);
+      --color-popover: oklch(0.269 0 0);
+      --color-popover-foreground: oklch(0.985 0 0);
+      --color-primary: oklch(0.922 0 0);
+      --color-primary-foreground: oklch(0.205 0 0);
+      --color-secondary: oklch(0.269 0 0);
+      --color-secondary-foreground: oklch(0.985 0 0);
+      --color-muted: oklch(0.269 0 0);
+      --color-muted-foreground: oklch(0.708 0 0);
+      --color-accent: oklch(0.371 0 0);
+      --color-accent-foreground: oklch(0.985 0 0);
+      --color-destructive: oklch(0.704 0.191 22.216);
+      --color-destructive-foreground: oklch(0.985 0 0);
+      --color-border: oklch(1 0 0 / 10%);
+      --color-input: oklch(1 0 0 / 15%);
+      --color-ring: oklch(0.556 0 0);
+      --color-sidebar: oklch(0.205 0 0);
+      --color-sidebar-foreground: oklch(0.985 0 0);
+      --color-sidebar-primary: oklch(0.985 0 0);
+      --color-sidebar-primary-foreground: oklch(0.205 0 0);
+      --color-sidebar-accent: oklch(0.269 0 0);
+      --color-sidebar-accent-foreground: oklch(0.985 0 0);
+      --color-sidebar-border: oklch(1 0 0 / 10%);
+      --color-sidebar-ring: oklch(0.439 0 0);
+    }
+
+    body {
+      font-family: var(--font-sans);
+    }
+
+    .nav-btn.active {
+      color: var(--color-sidebar-primary-foreground);
+      background: var(--color-sidebar-primary);
+      font-weight: 500;
+    }
+
+    #sidebar.collapsed {
+      width: 0;
+    }
+  </style>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- HTMX -->
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
-
-  <style>
-    :root {
-      --wb-primary: ${primary};
-      --wb-header-bg: ${headerBg};
-    }
-    body { height: 100vh; }
-    .dash-grid > div { overflow: hidden; }
-    .dash-grid > div > sl-card { display: block; height: 100%; }
-    .dash-grid > div > sl-card::part(base) { height: 100%; display: flex; flex-direction: column; background: rgb(15 23 42); border-color: rgb(30 41 59); }
-    .dash-grid > div > sl-card::part(body) { flex: 1; overflow: auto; }
-    .nav-btn.active { color: var(--wb-primary); background: rgba(255,255,255,0.05); font-weight: 500; }
-  </style>
 </head>
-<body class="m-0 font-sans text-slate-200 bg-slate-950 h-screen flex flex-col">
+<body class="m-0 bg-sidebar h-screen antialiased">
 
-  <!-- Top Navigation -->
-  <nav style="background-color: var(--wb-header-bg);" class="text-white flex items-center px-6 h-14 shrink-0 border-b border-slate-800">
-    <a href="/" class="text-xl font-bold tracking-tight text-white no-underline">${title}</a>
-    ${renderSearch(workbench, widgets)}
-    <div class="flex-1"></div>
-    ${renderHeaderActions(workbench)}
-    ${renderUserMenu(workbench)}
-  </nav>
+  <div class="flex h-screen">
 
-  <!-- Context Bar -->
-  ${renderContextBar(workbench, widgets)}
-
-  <div class="flex flex-1 overflow-hidden">
-
-    <!-- Left Sidebar -->
-    <aside class="w-56 bg-slate-900 border-r border-slate-800 py-4 shrink-0 overflow-y-auto flex flex-col">
-      ${renderSidebar(navNodes)}
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-sidebar text-sidebar-foreground flex flex-col shrink-0 transition-all duration-200 ease-linear overflow-hidden">
+      <!-- Sidebar Header -->
+      <div class="px-4 h-14 flex items-center shrink-0">
+        <a href="/" class="text-base font-semibold tracking-tight text-sidebar-foreground no-underline">${title}</a>
+      </div>
+      <!-- Sidebar Nav -->
+      <nav class="flex-1 overflow-y-auto py-2">
+        ${renderSidebar(navNodes)}
+      </nav>
+      <!-- Sidebar Footer -->
+      ${renderUserMenu(workbench)}
     </aside>
 
-    <!-- Content Area -->
-    <main class="flex-1 overflow-y-auto p-6" id="content">
-    </main>
+    <!-- Content Area (inset) -->
+    <div class="flex-1 flex flex-col my-2 mr-2 rounded-xl bg-background shadow-sm overflow-hidden">
+      <!-- Content Header -->
+      <header class="flex items-center h-14 border-b border-border shrink-0">
+        <div class="flex w-full items-center gap-2 px-4">
+          <button type="button" id="sidebar-trigger" class="-ml-1 inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition" aria-label="Toggle Sidebar">
+            <i data-lucide="panel-left" class="w-4 h-4"></i>
+          </button>
+          <div class="mx-2 h-4 w-px bg-border shrink-0"></div>
+          ${renderSearch(workbench, widgets)}
+          <div class="flex-1"></div>
+          ${renderHeaderActions(workbench)}
+        </div>
+      </header>
+
+      <!-- Context Bar -->
+      ${renderContextBar(workbench, widgets)}
+
+      <!-- Main Content -->
+      <main class="flex-1 overflow-y-auto p-6" id="content">
+      </main>
+    </div>
 
   </div>
 
 <script>
+// ── Initialize Lucide icons ──
+function initIcons() {
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// ── Sidebar toggle ──
+document.getElementById('sidebar-trigger').addEventListener('click', function() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
+
 // ── WorkbenchContext ──
 var WorkbenchContext = (function() {
   var STORAGE_KEY = 'workbench-context';
@@ -261,12 +325,25 @@ var WorkbenchContext = (function() {
   });
 })();
 
+// ── Action delegation ──
+document.addEventListener('click', function(evt) {
+  var btn = evt.target.closest('[data-action]');
+  if (!btn) return;
+  var action = btn.getAttribute('data-action');
+  if (action === 'clear-context') WorkbenchContext.clear();
+});
+
 // ── Inject X-Context-* headers on every HTMX request ──
 document.body.addEventListener('htmx:configRequest', function(evt) {
   var ctx = WorkbenchContext.getAll();
   Object.keys(ctx).forEach(function(key) {
     evt.detail.headers['X-Context-' + key] = ctx[key];
   });
+});
+
+// ── Re-initialize Lucide icons after HTMX swaps ──
+document.body.addEventListener('htmx:afterSwap', function() {
+  initIcons();
 });
 
 // ── Navigation ──
@@ -303,6 +380,7 @@ var DEFAULT_PAGE = '${workbench.spec.defaultPage}';
     var cleanPath = currentCleanPath() || DEFAULT_PAGE;
     highlightNav(cleanPath);
     htmx.ajax('GET', cleanPath, {target: '#content', swap: 'innerHTML'});
+    initIcons();
   });
 })();
 </script>

@@ -15,30 +15,30 @@ app.get("/fragments/todos/greeting", async (req, res) => {
         const overdue = rows.filter((r) => r.status === "OVERDUE");
         const completed = rows.filter((r) => r.status === "COMPLETED");
         res.type("html").send(`
-      <sl-card class="[--border-color:transparent]" style="--border-color: transparent;">
-        <div slot="header" class="bg-gradient-to-br from-blue-800 to-blue-500 text-white px-6 py-5 -m-[var(--padding)] rounded-t-lg">
-          <div class="text-xl font-bold">Today's Agenda</div>
-          <div class="text-sm text-white/80 mt-1">You have ${open.length} open items and ${inProgress.length} in progress</div>
+      <div class="rounded-xl border border-border bg-card shadow-xs overflow-hidden">
+        <div class="px-6 py-5">
+          <div class="text-lg font-semibold text-foreground">Today's Agenda</div>
+          <div class="text-sm text-muted-foreground mt-1">You have ${open.length} open items and ${inProgress.length} in progress</div>
           <div class="flex gap-8 mt-5">
             <div>
-              <div class="text-2xl font-bold leading-none">${open.length}</div>
-              <div class="text-xs text-white/70 mt-0.5">Open</div>
+              <div class="text-2xl font-semibold tabular-nums text-foreground">${open.length}</div>
+              <div class="text-xs text-muted-foreground mt-0.5">Open</div>
             </div>
             <div>
-              <div class="text-2xl font-bold leading-none">${inProgress.length}</div>
-              <div class="text-xs text-white/70 mt-0.5">In Progress</div>
+              <div class="text-2xl font-semibold tabular-nums text-foreground">${inProgress.length}</div>
+              <div class="text-xs text-muted-foreground mt-0.5">In Progress</div>
             </div>
             <div>
-              <div class="text-2xl font-bold leading-none">${overdue.length}</div>
-              <div class="text-xs text-white/70 mt-0.5">Overdue</div>
+              <div class="text-2xl font-semibold tabular-nums text-foreground">${overdue.length}</div>
+              <div class="text-xs text-muted-foreground mt-0.5">Overdue</div>
             </div>
             <div>
-              <div class="text-2xl font-bold leading-none">${completed.length}</div>
-              <div class="text-xs text-white/70 mt-0.5">Completed</div>
+              <div class="text-2xl font-semibold tabular-nums text-foreground">${completed.length}</div>
+              <div class="text-xs text-muted-foreground mt-0.5">Completed</div>
             </div>
           </div>
         </div>
-      </sl-card>`);
+      </div>`);
     }
     catch (err) {
         res.status(502).send(`<p>Error loading greeting: ${String(err)}</p>`);
@@ -50,18 +50,18 @@ app.get("/fragments/todos/summary", async (req, res) => {
         const resource = await fetchHalSchemaForms(`${TODOS_API_URL}/ui/tasks`, ctx);
         const rows = (resource.items || []);
         res.type("html").send(`
-      <sl-card>
-        <div slot="header" class="flex items-center justify-between font-semibold text-sm text-slate-700">
+      <div class="rounded-xl border border-border bg-card shadow-xs">
+        <div class="px-4 py-3 border-b border-border flex items-center justify-between font-semibold text-sm text-card-foreground">
           Action Items
-          <sl-button size="small" variant="text"
+          <button class="text-sm text-muted-foreground hover:text-foreground transition"
                   hx-get="/fragments/todos/list" hx-target="#content" hx-swap="innerHTML">
             View all
-          </sl-button>
+          </button>
         </div>
-        <div id="todo-widget-body">
+        <div class="p-4" id="todo-widget-body">
           ${renderTodoItems(rows)}
         </div>
-      </sl-card>`);
+      </div>`);
     }
     catch (err) {
         res.status(502).send(`<p>Error loading todo summary: ${String(err)}</p>`);
@@ -69,10 +69,12 @@ app.get("/fragments/todos/summary", async (req, res) => {
 });
 app.get("/fragments/todos/deadlines", (_req, res) => {
     res.type("html").send(`
-    <sl-card>
-      <div slot="header" class="font-semibold text-sm text-slate-700">Alerts & Tasks</div>
-      ${renderDeadlines()}
-    </sl-card>`);
+    <div class="rounded-xl border border-border bg-card shadow-xs">
+      <div class="px-4 py-3 border-b border-border font-semibold text-sm text-card-foreground">Alerts & Tasks</div>
+      <div class="p-4">
+        ${renderDeadlines()}
+      </div>
+    </div>`);
 });
 // ── Full-page views ──
 app.get("/fragments/todos/list", async (req, res) => {
@@ -83,25 +85,25 @@ app.get("/fragments/todos/list", async (req, res) => {
         res.type("html").send(`
       <div class="flex items-end justify-between mb-5">
         <div>
-          <h1 class="text-2xl font-bold text-slate-800">My Action Items</h1>
-          <p class="text-sm text-slate-500 mt-0.5">${rows.length} action items</p>
+          <h1 class="text-2xl font-semibold text-foreground">My Action Items</h1>
+          <p class="text-sm text-muted-foreground mt-0.5">${rows.length} action items</p>
         </div>
         <div class="flex gap-2">
-          <sl-button variant="primary"
+          <button class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition"
                   hx-get="/fragments/todos/add" hx-target="#todo-full-body" hx-swap="beforebegin">
-            <sl-icon slot="prefix" name="plus-lg"></sl-icon> New Action Item
-          </sl-button>
-          <sl-button variant="default"
+            <i data-lucide="plus" class="w-4 h-4"></i> New Action Item
+          </button>
+          <button class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium bg-secondary text-secondary-foreground hover:bg-accent transition"
                   hx-get="/fragments/dashboard" hx-target="#content" hx-swap="innerHTML">
             Back
-          </sl-button>
+          </button>
         </div>
       </div>
-      <sl-card>
+      <div class="rounded-xl border border-border bg-card shadow-xs p-4">
         <div id="todo-full-body">
           ${renderTodoItems(rows)}
         </div>
-      </sl-card>`);
+      </div>`);
     }
     catch (err) {
         res.status(502).send(`<p>Error loading todos: ${String(err)}</p>`);
@@ -128,26 +130,23 @@ app.get("/fragments/todos/:id/edit", async (req, res) => {
     }
 });
 // ── Helpers ──
+function statusBadgeClass() {
+    return "inline-flex items-center rounded-full border border-border px-2 py-0.5 text-xs font-medium text-foreground";
+}
 function renderTodoItems(rows) {
     if (rows.length === 0) {
-        return '<p class="text-center py-8 text-slate-400 text-sm">No action items. All caught up!</p>';
+        return '<p class="text-center py-8 text-muted-foreground text-sm">No action items. All caught up!</p>';
     }
     return rows
         .map((r) => {
         const isDone = r.status === "COMPLETED";
-        const badgeVariant = r.status === "OPEN"
-            ? "warning"
-            : r.status === "IN_PROGRESS"
-                ? "primary"
-                : r.status === "OVERDUE"
-                    ? "danger"
-                    : "success";
         return `
-        <div class="flex items-center gap-2.5 py-2 border-b border-slate-50 last:border-b-0 text-sm text-slate-700">
-          <sl-checkbox ${isDone ? "checked" : ""} disabled></sl-checkbox>
-          <span class="${isDone ? "line-through text-slate-400" : ""} flex-1">${esc(r.title)}</span>
-          <sl-badge variant="${badgeVariant}">${r.status}</sl-badge>
-          <span class="text-xs text-slate-400 shrink-0">${r.dueDate || ''}</span>
+        <div class="flex items-center gap-2.5 py-2.5 border-b border-border last:border-b-0 text-sm text-foreground">
+          <input type="checkbox" ${isDone ? "checked" : ""} disabled
+                 class="w-4 h-4 rounded border-input bg-background accent-primary cursor-not-allowed" />
+          <span class="${isDone ? "line-through text-muted-foreground" : ""} flex-1">${esc(r.title)}</span>
+          <span class="${statusBadgeClass()}">${r.status}</span>
+          <span class="text-xs text-muted-foreground shrink-0">${r.dueDate || ''}</span>
         </div>`;
     })
         .join("");
@@ -162,10 +161,10 @@ function renderDeadlines() {
     ];
     return deadlines
         .map((d) => `
-      <div class="flex items-center gap-2.5 py-2 border-b border-slate-50 last:border-b-0 text-sm">
-        <sl-icon name="${d.urgent ? "exclamation-triangle" : "calendar-event"}" class="${d.urgent ? "text-red-500" : "text-slate-400"}"></sl-icon>
-        <span class="flex-1 ${d.urgent ? "text-red-600 font-medium" : "text-slate-700"}">${d.label}</span>
-        <span class="text-xs text-slate-400 shrink-0">${d.time}</span>
+      <div class="flex items-center gap-2.5 py-2.5 border-b border-border last:border-b-0 text-sm">
+        <i data-lucide="${d.urgent ? "alert-triangle" : "calendar"}" class="w-4 h-4 text-muted-foreground"></i>
+        <span class="flex-1 text-foreground">${d.label}</span>
+        <span class="text-xs text-muted-foreground shrink-0">${d.time}</span>
       </div>`)
         .join("");
 }

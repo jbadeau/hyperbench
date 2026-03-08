@@ -6,7 +6,7 @@ export const catalog = defineCatalog(schema, {
         Card: {
             props: z.object({}),
             slots: ["default"],
-            description: "Outer card wrapper using sl-card",
+            description: "Outer card wrapper with border and shadow",
         },
         ProgressBar: {
             props: z.object({
@@ -14,7 +14,7 @@ export const catalog = defineCatalog(schema, {
                 label: z.string(),
             }),
             slots: [],
-            description: "Wizard progress bar using sl-progress-bar",
+            description: "Wizard progress bar with percentage",
         },
         StepLabel: {
             props: z.object({
@@ -29,7 +29,7 @@ export const catalog = defineCatalog(schema, {
                 variant: z.string(),
             }),
             slots: [],
-            description: "Alert banner using sl-alert",
+            description: "Alert banner with variant styling",
         },
         Summary: {
             props: z.object({
@@ -68,7 +68,7 @@ export const catalog = defineCatalog(schema, {
                 patchUrl: z.string().nullable(),
             }),
             slots: [],
-            description: "Text input field using sl-input",
+            description: "Text input field with label",
         },
         SelectField: {
             props: z.object({
@@ -81,7 +81,7 @@ export const catalog = defineCatalog(schema, {
                 patchUrl: z.string().nullable(),
             }),
             slots: [],
-            description: "Select dropdown using sl-select",
+            description: "Select dropdown with label",
         },
         TextareaField: {
             props: z.object({
@@ -94,7 +94,7 @@ export const catalog = defineCatalog(schema, {
                 patchUrl: z.string().nullable(),
             }),
             slots: [],
-            description: "Textarea field using sl-textarea",
+            description: "Textarea field with label",
         },
         Button: {
             props: z.object({
@@ -105,7 +105,7 @@ export const catalog = defineCatalog(schema, {
                 hxPost: z.string().nullable(),
             }),
             slots: [],
-            description: "Button using sl-button with optional HTMX navigation",
+            description: "Button with optional HTMX navigation",
         },
         ButtonGroup: {
             props: z.object({}),

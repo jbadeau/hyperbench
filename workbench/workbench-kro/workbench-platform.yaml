@@ -8,11 +8,9 @@ spec:
     kind: WorkbenchPlatform
     spec:
       # -- Workbench settings --
-      title: string | default="HyperBench Portal"
+      title: string | default="Hyperbench"
       defaultPage: string | default="/clients"
       port: integer | default=3000
-      themePrimary: string | default="#1e40af"
-      themeHeaderBg: string | default="#1e293b"
 
       # -- Cross-namespace service URLs --
       todosFrontendUrl: string | default="http://todos.todos.svc.cluster.local:3001"
@@ -240,9 +238,6 @@ spec:
           branding:
             logo: "/assets/logo.svg"
             favicon: "/assets/favicon.ico"
-          theme:
-            primary: ${schema.spec.themePrimary}
-            headerBg: ${schema.spec.themeHeaderBg}
           header:
             search:
               enabled: true

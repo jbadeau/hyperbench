@@ -11,9 +11,6 @@ spec:
   branding:
     logo: "/assets/logo.svg"
     favicon: "/assets/favicon.ico"
-  theme:
-    primary: {{ .Values.workbench.theme.primary | quote }}
-    headerBg: {{ .Values.workbench.theme.headerBg | quote }}
   header:
     search:
       enabled: true
