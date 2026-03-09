@@ -92,3 +92,49 @@ spec:
     endpoint: "/clients/details"
     swap: "innerHTML"
     trigger: "load, workbench:context from:body"
+---
+# ── Dashboard widgets (mocked) ──
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: Widget
+metadata:
+  name: dashboard-kpi-cards
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "server"
+  title: "KPI Cards"
+  description: "Dashboard KPI metric cards"
+  server:
+    endpoint: "/dashboard/kpi-cards"
+    swap: "innerHTML"
+    trigger: "load"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: Widget
+metadata:
+  name: dashboard-chart
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "server"
+  title: "Visitors Chart"
+  description: "Total visitors area chart"
+  server:
+    endpoint: "/dashboard/chart"
+    swap: "innerHTML"
+    trigger: "load"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: Widget
+metadata:
+  name: dashboard-data-table
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "server"
+  title: "Data Table"
+  description: "Document outline data table"
+  server:
+    endpoint: "/dashboard/data-table"
+    swap: "innerHTML"
+    trigger: "load"

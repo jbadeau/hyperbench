@@ -1,16 +1,42 @@
+# ── Home group ──
 apiVersion: portal.hyperbench.com/v1alpha1
 kind: NavigationNode
 metadata:
-  name: home-page
+  name: home-group
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "group"
+  title: "Home"
+  ordinal: 0
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: dashboard-page
   labels:
     {{- include "hyperbench-workbench.labels" . | nindent 4 }}
 spec:
   type: "page"
-  title: "Home"
-  icon: "house"
-  ordinal: 0
+  title: "Dashboard"
+  icon: "layout-dashboard"
+  ordinal: 10
+  parent: "home-group"
   page:
-    path: "/"
+    description: "Overview dashboard with KPI metrics"
+    path: "/dashboard"
+    layout:
+      type: "grid"
+      columns: "1fr"
+      rows: "auto"
+      gap: "1rem"
+      slots:
+        - name: "kpi-cards"
+          widgetRef: "dashboard-kpi-cards"
+        - name: "chart"
+          widgetRef: "dashboard-chart"
+        - name: "data-table"
+          widgetRef: "dashboard-data-table"
 ---
 apiVersion: portal.hyperbench.com/v1alpha1
 kind: NavigationNode
@@ -21,8 +47,9 @@ metadata:
 spec:
   type: "page"
   title: "Clients"
-  icon: "people"
-  ordinal: 10
+  icon: "users"
+  ordinal: 15
+  parent: "home-group"
   page:
     description: "Client management dashboard"
     path: "/clients"
@@ -34,3 +61,178 @@ spec:
       slots:
         - name: "table"
           widgetRef: "clients-table"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: lifecycle-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Lifecycle"
+  icon: "refresh-cw"
+  ordinal: 20
+  parent: "home-group"
+  page:
+    path: "/lifecycle"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: analytics-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Analytics"
+  icon: "bar-chart-3"
+  ordinal: 30
+  parent: "home-group"
+  page:
+    path: "/analytics"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: projects-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Projects"
+  icon: "folder"
+  ordinal: 40
+  parent: "home-group"
+  page:
+    path: "/projects"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: team-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Team"
+  icon: "users"
+  ordinal: 50
+  parent: "home-group"
+  page:
+    path: "/team"
+---
+# ── Documents group ──
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: documents-group
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "group"
+  title: "Documents"
+  ordinal: 100
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: data-library-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Data Library"
+  icon: "database"
+  ordinal: 110
+  parent: "documents-group"
+  page:
+    path: "/data-library"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: reports-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Reports"
+  icon: "clipboard-list"
+  ordinal: 120
+  parent: "documents-group"
+  page:
+    path: "/reports"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: word-assistant-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Word Assistant"
+  icon: "file-text"
+  ordinal: 130
+  parent: "documents-group"
+  page:
+    path: "/word-assistant"
+---
+# ── Secondary group (bottom) ──
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: secondary-group
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+    portal.hyperbench.com/position: "secondary"
+spec:
+  type: "group"
+  title: ""
+  ordinal: 900
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: settings-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Settings"
+  icon: "settings"
+  ordinal: 910
+  parent: "secondary-group"
+  page:
+    path: "/settings"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: help-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Get Help"
+  icon: "circle-help"
+  ordinal: 920
+  parent: "secondary-group"
+  page:
+    path: "/help"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: search-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Search"
+  icon: "search"
+  ordinal: 930
+  parent: "secondary-group"
+  page:
+    path: "/search"

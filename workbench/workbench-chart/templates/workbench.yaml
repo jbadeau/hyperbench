@@ -21,7 +21,8 @@ spec:
       enabled: false
     userMenu:
       enabled: true
-      label: "Admin User"
+      label: "shadcn"
+      email: "m@example.com"
   contextBar:
     enabled: true
     widgetRef: "client-context"

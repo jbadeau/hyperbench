@@ -1,6 +1,6 @@
 workbench:
-  title: "Hyperbench"
-  defaultPage: "/clients"
+  title: "Acme Inc."
+  defaultPage: "/dashboard"
   port: 3000
 
 services:

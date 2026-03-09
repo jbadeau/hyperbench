@@ -117,6 +117,10 @@ type UserMenuSpec struct {
 	// Label is the display text for the user menu.
 	// +optional
 	Label string `json:"label,omitempty"`
+
+	// Email is the user's email address displayed below the label.
+	// +optional
+	Email string `json:"email,omitempty"`
 }
 
 // ContextBarSpec configures the context bar below the header.

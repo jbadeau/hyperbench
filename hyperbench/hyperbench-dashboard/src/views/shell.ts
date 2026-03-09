@@ -37,6 +37,7 @@ function renderUserMenu(workbench: Workbench): string {
   const userMenu = workbench.spec.header?.userMenu;
   if (!userMenu?.enabled) return "";
   const label = userMenu.label ?? "";
+  const email = userMenu.email ?? "";
   const initials = label.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
   return `
     <div class="border-t border-sidebar-border p-4">
@@ -44,6 +45,7 @@ function renderUserMenu(workbench: Workbench): string {
         <div class="w-8 h-8 rounded-lg bg-sidebar-accent flex items-center justify-center text-xs font-medium text-sidebar-accent-foreground">${initials}</div>
         <div class="flex-1 min-w-0">
           <div class="text-sm font-medium truncate">${label}</div>
+          ${email ? `<div class="text-xs text-muted-foreground truncate">${email}</div>` : ""}
         </div>
       </div>
     </div>`;
@@ -84,6 +86,7 @@ function renderNavNode(node: NavigationNode, nodeMap: Map<string, NavigationNode
   const spec = node.spec;
 
   if (spec.type === "group") {
+    if (!spec.title) return "";
     return `<div class="text-xs font-medium text-muted-foreground px-3 mb-1.5">${spec.title}</div>`;
   }
 
@@ -129,20 +132,27 @@ function renderSidebar(navNodes: NavigationNode[]): string {
     }
   }
 
-  const sections: string[] = [];
+  const mainSections: string[] = [];
+  const secondarySections: string[] = [];
+
   for (const node of topLevel) {
+    const isSecondary = node.metadata.labels?.["portal.hyperbench.com/position"] === "secondary";
     const kids = children.get(node.metadata.name) ?? [];
     if (node.spec.type === "group") {
       const groupHtml = renderNavNode(node, nodeMap);
       const childHtml = kids.map(child => renderNavNode(child, nodeMap)).join("\n");
-      sections.push(`<div class="px-3 mb-4">${groupHtml}${childHtml}</div>`);
+      const section = `<div class="px-3 mb-4">${groupHtml}${childHtml}</div>`;
+      (isSecondary ? secondarySections : mainSections).push(section);
     } else {
       const html = renderNavNode(node, nodeMap);
-      sections.push(`<div class="px-3 mb-4">${html}</div>`);
+      const section = `<div class="px-3 mb-4">${html}</div>`;
+      (isSecondary ? secondarySections : mainSections).push(section);
     }
   }
 
-  return sections.join("\n");
+  return `
+    <div class="flex-1">${mainSections.join("\n")}</div>
+    ${secondarySections.length > 0 ? `<div class="mt-auto border-t border-sidebar-border pt-2">${secondarySections.join("\n")}</div>` : ""}`;
 }
 
 export function htmlShell(
@@ -228,11 +238,14 @@ export function htmlShell(
     <!-- Sidebar -->
     <aside id="sidebar" class="w-64 bg-sidebar text-sidebar-foreground flex flex-col shrink-0 transition-all duration-200 ease-linear overflow-hidden">
       <!-- Sidebar Header -->
-      <div class="px-4 h-14 flex items-center shrink-0">
+      <div class="px-4 h-14 flex items-center gap-2 shrink-0">
+        <div class="flex items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground w-7 h-7">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+        </div>
         <a href="/" class="text-base font-semibold tracking-tight text-sidebar-foreground no-underline">${title}</a>
       </div>
       <!-- Sidebar Nav -->
-      <nav class="flex-1 overflow-y-auto py-2">
+      <nav class="flex-1 overflow-y-auto py-2 flex flex-col">
         ${renderSidebar(navNodes)}
       </nav>
       <!-- Sidebar Footer -->
@@ -247,6 +260,8 @@ export function htmlShell(
           <button type="button" id="sidebar-trigger" class="-ml-1 inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition" aria-label="Toggle Sidebar">
             <i data-lucide="panel-left" class="w-4 h-4"></i>
           </button>
+          <div class="mx-2 h-4 w-px bg-border shrink-0"></div>
+          <span id="page-title" class="text-sm font-medium text-foreground"></span>
           <div class="mx-2 h-4 w-px bg-border shrink-0"></div>
           ${renderSearch(workbench, widgets)}
           <div class="flex-1"></div>
@@ -370,6 +385,8 @@ var DEFAULT_PAGE = '${workbench.spec.defaultPage}';
       btn.classList.remove('active');
       if (btn.getAttribute('data-nav') === cleanPath) {
         btn.classList.add('active');
+        var titleEl = document.getElementById('page-title');
+        if (titleEl) titleEl.textContent = btn.textContent.trim();
       }
     });
   }

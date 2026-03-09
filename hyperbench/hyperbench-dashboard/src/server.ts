@@ -4,6 +4,7 @@ import { loadCrds } from "./k8s/client.js";
 import { MutableCrdStore } from "./k8s/crd-store.js";
 import { startCrdWatchers } from "./k8s/watcher.js";
 import type { NavigationNode, Widget, SlotSpec } from "./k8s/types.js";
+import { renderKpiCards, renderChart, renderDataTable } from "./views/dashboard-home.js";
 
 async function main() {
   const app = express();
@@ -29,6 +30,17 @@ async function main() {
     } else {
       res.type("html").send(store.shellHtml);
     }
+  });
+
+  // Dashboard widget endpoints (mocked content)
+  app.get("/dashboard/kpi-cards", (_req, res) => {
+    res.type("html").send(renderKpiCards());
+  });
+  app.get("/dashboard/chart", (_req, res) => {
+    res.type("html").send(renderChart());
+  });
+  app.get("/dashboard/data-table", (_req, res) => {
+    res.type("html").send(renderDataTable());
   });
 
   // Single dynamic proxy — reads store.proxyIndex at request time
@@ -106,7 +118,17 @@ function renderSlot(slot: SlotSpec, widget: Widget, extraStyle?: string): string
 
 function renderPageLayout(node: NavigationNode, widgets: Map<string, Widget>): string {
   const layout = node.spec.page?.layout;
-  if (!layout || !layout.slots) return "";
+  if (!layout || !layout.slots) {
+    const icon = node.spec.icon || "file";
+    const title = node.spec.title;
+    const desc = node.spec.page?.description || "This page is under construction.";
+    return `
+    <div class="flex flex-col items-center justify-center h-64 text-muted-foreground">
+      <i data-lucide="${icon}" class="w-12 h-12 mb-4 opacity-50"></i>
+      <h2 class="text-lg font-medium text-foreground">${title}</h2>
+      <p class="text-sm mt-1">${desc}</p>
+    </div>`;
+  }
 
   if (layout.type === "grid") {
     const columns = layout.columns ?? "1fr";

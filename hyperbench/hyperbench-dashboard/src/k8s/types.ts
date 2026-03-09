@@ -17,6 +17,7 @@ export interface UserMenu {
   enabled?: boolean;
   label?: string;
   avatar?: string;
+  email?: string;
 }
 
 export interface WorkbenchSpec {
