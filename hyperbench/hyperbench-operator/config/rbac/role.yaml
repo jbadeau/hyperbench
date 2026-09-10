@@ -8,6 +8,7 @@ rules:
   - portal.hyperbench.com
   resources:
   - actions
+  - designs
   - navigationnodes
   - serviceproxies
   - widgets
@@ -24,6 +25,7 @@ rules:
   - portal.hyperbench.com
   resources:
   - actions/finalizers
+  - designs/finalizers
   - navigationnodes/finalizers
   - serviceproxies/finalizers
   - widgets/finalizers
@@ -34,6 +36,7 @@ rules:
   - portal.hyperbench.com
   resources:
   - actions/status
+  - designs/status
   - navigationnodes/status
   - serviceproxies/status
   - widgets/status

@@ -7,6 +7,7 @@ resources:
 - bases/portal.hyperbench.com_navigationnodes.yaml
 - bases/portal.hyperbench.com_widgets.yaml
 - bases/portal.hyperbench.com_actions.yaml
+- bases/portal.hyperbench.com_designs.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:

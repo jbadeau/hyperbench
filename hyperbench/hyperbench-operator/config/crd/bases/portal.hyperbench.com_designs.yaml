@@ -1,0 +1,185 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: designs.portal.hyperbench.com
+spec:
+  group: portal.hyperbench.com
+  names:
+    kind: Design
+    listKind: DesignList
+    plural: designs
+    singular: design
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.title
+      name: Title
+      type: string
+    - jsonPath: .spec.targetWidget
+      name: Target
+      type: string
+    - jsonPath: .status.elementCount
+      name: Elements
+      type: integer
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Design is a saved json-render UI tree.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: |-
+              DesignSpec is a json-render UI tree that has been locked down.
+
+              A Design is the durable half of the playground loop: authors iterate on a
+              spec in the browser, where it is session state and never touches the cluster,
+              and save it here once they are happy. Only at that point does it become
+              platform configuration — versioned, RBAC-controlled and reconciled by GitOps
+              like every other resource. Per-user or in-progress specs must not be written
+              here; etcd is the wrong store for state that changes on every keystroke.
+            properties:
+              catalog:
+                description: |-
+                  Catalog names the component catalog this spec was authored against.
+                  A spec is only meaningful relative to a catalog, and a renderer with a
+                  different one may not have the components the spec references.
+                type: string
+              description:
+                description: Description records what the design is for.
+                type: string
+              prompt:
+                description: |-
+                  Prompt is the natural-language prompt the design was generated from,
+                  kept so an author can see how a design came about and re-generate from it.
+                type: string
+              spec:
+                description: |-
+                  Spec is the json-render spec: a root element key and a flat map of
+                  elements. It is free-form by design — the shape is owned by json-render,
+                  not by this CRD — so it is stored unvalidated by the API server and
+                  checked by the admission webhook against the deployed catalog instead.
+                x-kubernetes-preserve-unknown-fields: true
+              targetWidget:
+                description: |-
+                  TargetWidget names a Widget this design renders in place of.
+
+                  When set, the portal renders this design wherever that Widget is mounted,
+                  replacing whatever the Widget would have rendered itself. The binding is
+                  a field on the Design rather than on the Widget so that authoring an
+                  override needs write access to Designs only — a design author can re-skin
+                  a section without being able to re-point it at a different backend.
+
+                  A design with no TargetWidget is unbound: saved content that renders
+                  nowhere until something references it.
+                type: string
+              title:
+                description: Title is the human-readable name of the design.
+                type: string
+            required:
+            - spec
+            - title
+            type: object
+          status:
+            description: DesignStatus defines the observed state of Design.
+            properties:
+              components:
+                description: |-
+                  Components lists the distinct component types the spec references,
+                  so operators can see a design's catalog surface without reading the spec.
+                items:
+                  type: string
+                type: array
+              conditions:
+                description: Conditions represent the latest available observations.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              elementCount:
+                description: ElementCount is the number of elements in the spec.
+                type: integer
+              phase:
+                description: Phase represents the current lifecycle phase of the Design.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

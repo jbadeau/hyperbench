@@ -230,6 +230,13 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Widget")
 		os.Exit(1)
 	}
+	if err := (&controller.DesignReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Design")
+		os.Exit(1)
+	}
 	if err := (&controller.ActionReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
