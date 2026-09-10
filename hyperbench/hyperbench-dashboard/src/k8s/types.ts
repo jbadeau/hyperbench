@@ -24,6 +24,11 @@ export interface WorkbenchSpec {
   title: string;
   port?: number;
   defaultPage: string;
+  /** Colour overrides applied to the shell's Tailwind theme block. */
+  theme?: {
+    primary?: string;
+    headerBg?: string;
+  };
   branding?: {
     logo?: string;
     favicon?: string;
@@ -209,6 +214,33 @@ export interface Action {
   spec: ActionSpec;
 }
 
+// ── Design ──
+
+/**
+ * A saved json-render UI tree, authored in the playground.
+ *
+ * `targetWidget` binds the design to a Widget: the portal renders the design
+ * wherever that Widget is mounted, in place of whatever the Widget would have
+ * rendered itself. The binding lives here rather than on Widget so that
+ * authoring an override needs write access to Designs only — an author can
+ * re-skin a section without being able to re-point it at a different backend.
+ */
+export interface DesignSpec {
+  title: string;
+  description?: string;
+  prompt?: string;
+  catalog?: string;
+  /** Widget this design renders in place of; unbound when absent. */
+  targetWidget?: string;
+  /** Free-form json-render spec; its shape is owned by json-render, not by us. */
+  spec: unknown;
+}
+
+export interface Design {
+  metadata: KubeMetadata;
+  spec: DesignSpec;
+}
+
 // ── CRD Store ──
 
 export interface CrdStore {
@@ -217,4 +249,5 @@ export interface CrdStore {
   widgets: Map<string, Widget>;
   serviceProxies: ServiceProxy[];
   actions: Map<string, Action>;
+  designs: Map<string, Design>;
 }

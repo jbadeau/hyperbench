@@ -1,7 +1,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: RoleBinding
 metadata:
   name: dashboard-crd-reader
+  namespace: {{ .Values.workbenchNamespace }}
   labels:
     {{- include "hyperbench-dashboard.labels" . | nindent 4 }}
 subjects:
@@ -9,6 +10,6 @@ subjects:
     name: dashboard
     namespace: {{ .Release.Namespace }}
 roleRef:
-  kind: ClusterRole
+  kind: Role
   name: dashboard-crd-reader
   apiGroup: rbac.authorization.k8s.io

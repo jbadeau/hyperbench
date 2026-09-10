@@ -5,3 +5,17 @@ replicas: 1
 
 workbenchNamespace: "workbench"
 workbenchName: "workbench-sample"
+
+# Context keys the gateway will forward to backends. Anything arriving as an
+# X-Context-* header outside this list is dropped at the proxy boundary. These
+# values are client-asserted — they say what the user selected, never who they
+# are, and must not be used for authorization decisions.
+contextKeys: "clientid,clientname"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 96Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

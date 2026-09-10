@@ -1,3 +1,5 @@
+import { esc, safeUrl, safeCss, jsLiteral } from "@hyperbench/shared/lib/html.js";
+import { themeTokens } from "@hyperbench/shared/lib/theme.js";
 import type { Workbench, NavigationNode, Widget } from "../k8s/types.js";
 
 function renderSearch(workbench: Workbench, widgets: Map<string, Widget>): string {
@@ -10,9 +12,9 @@ function renderSearch(workbench: Workbench, widgets: Map<string, Widget>): strin
   return `
     <div class="relative" id="header-search">
       <i data-lucide="search" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none z-10"></i>
-      <input type="text" id="header-search-input" placeholder="${placeholder}"
+      <input type="text" id="header-search-input" placeholder="${esc(placeholder)}"
              autocomplete="off"
-             hx-get="${endpoint}" hx-target="#header-search-results" hx-swap="innerHTML"
+             hx-get="${safeUrl(endpoint)}" hx-target="#header-search-results" hx-swap="innerHTML"
              hx-trigger="input changed delay:200ms, focus" hx-params="*"
              name="q"
              class="bg-input border border-border rounded-md py-1.5 pl-8 pr-3 text-foreground text-sm w-72 outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring transition" />
@@ -42,10 +44,10 @@ function renderUserMenu(workbench: Workbench): string {
   return `
     <div class="border-t border-sidebar-border p-4">
       <div class="flex items-center gap-3 text-sidebar-foreground text-sm">
-        <div class="w-8 h-8 rounded-lg bg-sidebar-accent flex items-center justify-center text-xs font-medium text-sidebar-accent-foreground">${initials}</div>
+        <div class="w-8 h-8 rounded-lg bg-sidebar-accent flex items-center justify-center text-xs font-medium text-sidebar-accent-foreground">${esc(initials)}</div>
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium truncate">${label}</div>
-          ${email ? `<div class="text-xs text-muted-foreground truncate">${email}</div>` : ""}
+          <div class="text-sm font-medium truncate">${esc(label)}</div>
+          ${email ? `<div class="text-xs text-muted-foreground truncate">${esc(email)}</div>` : ""}
         </div>
       </div>
     </div>`;
@@ -60,8 +62,8 @@ function renderContextBar(workbench: Workbench, widgets: Map<string, Widget>): s
   const trigger = widget.spec.server.trigger ?? "load";
   return `
   <div id="context-bar" class="border-b border-border"
-       hx-get="${endpoint}"
-       hx-trigger="${trigger}"
+       hx-get="${safeUrl(endpoint)}"
+       hx-trigger="${esc(trigger)}"
        hx-swap="innerHTML">
   </div>`;
 }
@@ -87,29 +89,29 @@ function renderNavNode(node: NavigationNode, nodeMap: Map<string, NavigationNode
 
   if (spec.type === "group") {
     if (!spec.title) return "";
-    return `<div class="text-xs font-medium text-muted-foreground px-3 mb-1.5">${spec.title}</div>`;
+    return `<div class="text-xs font-medium text-muted-foreground px-3 mb-1.5">${esc(spec.title)}</div>`;
   }
 
   if (spec.type === "page" || spec.type === "alias") {
     const path = resolveTargetPath(node, nodeMap);
     if (!path) return "";
-    const icon = spec.icon ? `<i data-lucide="${spec.icon}" class="w-4 h-4"></i> ` : "";
+    const icon = spec.icon ? `<i data-lucide="${esc(spec.icon)}" class="w-4 h-4"></i> ` : "";
     return `
       <button class="nav-btn flex items-center gap-2 py-1.5 px-3 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sm w-full text-left transition"
-              data-nav="${path}"
-              hx-get="${path}" hx-target="#content" hx-swap="innerHTML" hx-push-url="${path}">
-        ${icon}${spec.title}
+              data-nav="${esc(path)}"
+              hx-get="${safeUrl(path)}" hx-target="#content" hx-swap="innerHTML" hx-push-url="${safeUrl(path)}">
+        ${icon}${esc(spec.title)}
       </button>`;
   }
 
   if (spec.type === "link" && spec.link) {
-    const target = spec.link.target ? ` target="${spec.link.target}"` : "";
+    const target = spec.link.target ? ` target="${esc(spec.link.target)}"` : "";
     const rel = spec.link.target ? ` rel="noopener noreferrer"` : "";
-    const icon = spec.icon ? `<i data-lucide="${spec.icon}" class="w-4 h-4"></i> ` : "";
+    const icon = spec.icon ? `<i data-lucide="${esc(spec.icon)}" class="w-4 h-4"></i> ` : "";
     return `
-      <a href="${spec.link.url}"${target}${rel}
+      <a href="${safeUrl(spec.link.url)}"${target}${rel}
          class="flex items-center gap-2 py-1.5 px-3 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sm w-full text-left transition no-underline">
-        ${icon}${spec.title}
+        ${icon}${esc(spec.title)}
       </a>`;
   }
 
@@ -162,12 +164,17 @@ export function htmlShell(
 ): string {
   const title = workbench.spec.title;
 
+  // Workbench.spec.theme carries raw CSS colour values from a Custom Resource.
+  // They are emitted into a <style> block, so they go through safeCss rather
+  // than esc — a stray `;` or `}` here would open new declarations or rules.
+  const primary = safeCss(workbench.spec.theme?.primary);
+  const headerBg = safeCss(workbench.spec.theme?.headerBg);
   return `<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>${title}</title>
+  <title>${esc(title)}</title>
 
   <!-- Inter Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -177,37 +184,7 @@ export function htmlShell(
   <!-- Tailwind CSS v4 -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style type="text/tailwindcss">
-    @theme {
-      --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-      --radius: 0.625rem;
-      --color-background: oklch(0.145 0 0);
-      --color-foreground: oklch(0.985 0 0);
-      --color-card: oklch(0.205 0 0);
-      --color-card-foreground: oklch(0.985 0 0);
-      --color-popover: oklch(0.269 0 0);
-      --color-popover-foreground: oklch(0.985 0 0);
-      --color-primary: oklch(0.922 0 0);
-      --color-primary-foreground: oklch(0.205 0 0);
-      --color-secondary: oklch(0.269 0 0);
-      --color-secondary-foreground: oklch(0.985 0 0);
-      --color-muted: oklch(0.269 0 0);
-      --color-muted-foreground: oklch(0.708 0 0);
-      --color-accent: oklch(0.371 0 0);
-      --color-accent-foreground: oklch(0.985 0 0);
-      --color-destructive: oklch(0.704 0.191 22.216);
-      --color-destructive-foreground: oklch(0.985 0 0);
-      --color-border: oklch(1 0 0 / 10%);
-      --color-input: oklch(1 0 0 / 15%);
-      --color-ring: oklch(0.556 0 0);
-      --color-sidebar: oklch(0.205 0 0);
-      --color-sidebar-foreground: oklch(0.985 0 0);
-      --color-sidebar-primary: oklch(0.985 0 0);
-      --color-sidebar-primary-foreground: oklch(0.205 0 0);
-      --color-sidebar-accent: oklch(0.269 0 0);
-      --color-sidebar-accent-foreground: oklch(0.985 0 0);
-      --color-sidebar-border: oklch(1 0 0 / 10%);
-      --color-sidebar-ring: oklch(0.439 0 0);
-    }
+${themeTokens({ primary, headerBg })}
 
     body {
       font-family: var(--font-sans);
@@ -222,14 +199,68 @@ export function htmlShell(
     #sidebar.collapsed {
       width: 0;
     }
+
+    /* A section with an editor window open. Outline, not border, so switching
+       it on does not reflow the page around it. */
+    [data-widget].pg-editing {
+      outline: 2px solid oklch(0.62 0.19 259);
+      outline-offset: 3px;
+      border-radius: var(--radius);
+      position: relative;
+    }
+
+    /* Edit affordance: one floating button repositioned over whichever section
+       is hovered, rather than one injected per slot — htmx swaps slot contents
+       and would strip an injected child on every refresh. */
+    #pg-edit-fab {
+      position: absolute;
+      z-index: 40;
+      display: none;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+      border-radius: 0.375rem;
+      border: 1px solid var(--color-border);
+      background: var(--color-card);
+      color: var(--color-foreground);
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+    }
+
+    #pg-edit-fab:hover {
+      background: var(--color-accent);
+    }
+
+    /* Sits inside the slot, not hung above its top edge: slots carry
+       overflow:hidden, which clipped the label entirely while leaving the
+       outline (drawn outside the box, and not subject to the slot's own
+       overflow) perfectly visible. */
+    [data-widget].pg-editing::after {
+      content: "editing";
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0.05rem 0.4rem;
+      font-size: 0.625rem;
+      line-height: 1.1rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: oklch(0.985 0 0);
+      background: oklch(0.62 0.19 259);
+      border-top-left-radius: var(--radius);
+      border-bottom-right-radius: 0.375rem;
+      pointer-events: none;
+      z-index: 30;
+    }
   </style>
 
   <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@0.544.0"></script>
 
   <!-- HTMX -->
-  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-  <script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.10"></script>
+  <script src="https://unpkg.com/htmx-ext-json-enc@2.0.3/json-enc.js"></script>
 </head>
 <body class="m-0 bg-sidebar h-screen antialiased">
 
@@ -364,6 +395,26 @@ document.addEventListener('click', function(evt) {
   if (action === 'clear-context') WorkbenchContext.clear();
 });
 
+// ── Context delegation ──
+// Elements opt into setting workbench context by carrying a JSON object in
+// data-set-context. Fragments never ship inline handlers: server data reaches
+// the DOM as an attribute value, which is parsed as data and never as code.
+document.addEventListener('click', function(evt) {
+  var el = evt.target.closest('[data-set-context]');
+  if (!el) return;
+  var entries;
+  try {
+    entries = JSON.parse(el.getAttribute('data-set-context'));
+  } catch (e) {
+    console.warn('[workbench] malformed data-set-context', e);
+    return;
+  }
+  if (!entries || typeof entries !== 'object') return;
+  Object.keys(entries).forEach(function(key) {
+    WorkbenchContext.set(key, String(entries[key]));
+  });
+});
+
 // ── Inject X-Context-* headers on every HTMX request ──
 document.body.addEventListener('htmx:configRequest', function(evt) {
   var ctx = WorkbenchContext.getAll();
@@ -377,8 +428,187 @@ document.body.addEventListener('htmx:afterSwap', function() {
   initIcons();
 });
 
+// ── Edit-in-place affordance ──
+// Every portal section carries data-widget, so hovering one can offer to open
+// the playground editor for it without a trip to the playground page.
+(function() {
+  var fab = null;
+  var current = null;
+
+  function ensureFab() {
+    if (fab) return fab;
+    fab = document.createElement('button');
+    fab.id = 'pg-edit-fab';
+    fab.type = 'button';
+    fab.textContent = 'Edit UI';
+    fab.addEventListener('click', function(evt) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (!current) return;
+      var w = window.open(
+        '/playground/window/' + encodeURIComponent(current),
+        'pg-editor-' + current,
+        'width=1400,height=900,resizable=yes,scrollbars=yes'
+      );
+      if (!w) {
+        alert('The editor opens in a new window — allow pop-ups for this site.');
+        return;
+      }
+      w.focus();
+    });
+    // Keep it alive while the pointer is on the button itself.
+    fab.addEventListener('mouseenter', function() { fab.style.display = 'inline-flex'; });
+    fab.addEventListener('mouseleave', hide);
+    document.body.appendChild(fab);
+    return fab;
+  }
+
+  function hide() {
+    if (fab) fab.style.display = 'none';
+    current = null;
+  }
+
+  document.addEventListener('mouseover', function(evt) {
+    var slot = evt.target && evt.target.closest && evt.target.closest('[data-widget]');
+    if (!slot) return;
+    var name = slot.getAttribute('data-widget');
+    if (!name) return;
+
+    var el = ensureFab();
+    current = name;
+    var r = slot.getBoundingClientRect();
+    el.style.top = (window.scrollY + r.top + 6) + 'px';
+    el.style.left = (window.scrollX + r.right - 70) + 'px';
+    el.style.display = 'inline-flex';
+  });
+
+  document.addEventListener('mouseout', function(evt) {
+    var slot = evt.target && evt.target.closest && evt.target.closest('[data-widget]');
+    if (!slot) return;
+    var to = evt.relatedTarget;
+    if (to && (to === fab || (fab && fab.contains(to)) || slot.contains(to))) return;
+    hide();
+  });
+
+  window.addEventListener('scroll', hide, {passive: true});
+})();
+
+// ── Editing highlight ──
+// The editor runs in its own window, so it announces which section it is
+// editing over a BroadcastChannel. Every portal window listens and rings that
+// section. A window opened after the editor asks for the current state rather
+// than sitting un-highlighted until the next change.
+(function() {
+  if (typeof BroadcastChannel === 'undefined') return;
+
+  var channel = new BroadcastChannel('pg-editing');
+  var editing = {};
+
+  function apply() {
+    document.querySelectorAll('[data-widget]').forEach(function(el) {
+      var name = el.getAttribute('data-widget');
+      el.classList.toggle('pg-editing', editing[name] === true);
+    });
+  }
+
+  channel.addEventListener('message', function(evt) {
+    var msg = evt.data;
+    if (!msg) return;
+
+    if (msg.type === 'editing' && msg.widget) {
+      if (msg.active) editing[msg.widget] = true;
+      else delete editing[msg.widget];
+      apply();
+      return;
+    }
+
+    // An editor window is asking who is listening; portals have nothing to
+    // answer, but a portal asking gets answers from the editors.
+    if (msg.type === 'announce' && msg.widget) {
+      editing[msg.widget] = true;
+      apply();
+    }
+  });
+
+  // Re-apply after every swap: htmx replaces slot elements, and the new ones
+  // come back without the class.
+  document.body.addEventListener('htmx:afterSwap', apply);
+
+  channel.postMessage({type: 'who-is-editing'});
+})();
+
+// ── Live design updates ──
+// Sections backed by a Design carry data-design="<name>". The gateway pushes a
+// name whenever that Design changes; every mounted copy re-fetches its own
+// rendered HTML, so an edit in the playground lands everywhere at once.
+(function() {
+  if (typeof EventSource === 'undefined') return;
+
+  var source = null;
+
+  /** Re-fetch the current page's layout, the way navigation does. */
+  function reloadCurrentPage() {
+    var path = window.location.pathname || '/';
+    htmx.ajax('GET', path, {target: '#content', swap: 'innerHTML'});
+  }
+
+  function connect() {
+    source = new EventSource('/events');
+
+    source.addEventListener('design', function(evt) {
+      var change;
+      try {
+        change = JSON.parse(evt.data);
+      } catch (err) {
+        return;
+      }
+      if (!change) return;
+
+      // Both ends of a retarget need repainting: the widget the design now
+      // renders in, and the one it stopped rendering in.
+      var widgets = [change.targetWidget, change.previousTargetWidget]
+        .filter(function(w, i, all) { return w && all.indexOf(w) === i; });
+      if (widgets.length === 0) return;
+
+      var relayout = false;
+
+      widgets.forEach(function(widget) {
+        var slot = document.querySelector('[data-widget="' + widget + '"]');
+        // Only a slot already rendering a design can be refreshed in place.
+        // One that is merely present still points at its app endpoint, and
+        // needs the server to hand back a new layout.
+        var alreadyBound = slot && slot.getAttribute('data-design-bound') === '1';
+        if (slot && alreadyBound && !change.deleted && widget === change.targetWidget) {
+          // Still bound to the same widget: the slot's URL is unchanged, so
+          // re-fetching it in place is enough and leaves the rest of the page
+          // untouched.
+          htmx.trigger(slot, 'refresh');
+        } else {
+          // Newly bound, unbound, or retargeted — which element the slot should
+          // point at has changed, and only the server knows the new layout.
+          relayout = true;
+        }
+      });
+
+      if (relayout) reloadCurrentPage();
+    });
+
+    // EventSource retries on its own, but only while the connection was ever
+    // established; an error after a clean close leaves it shut, so reconnect
+    // explicitly rather than silently losing live updates for the session.
+    source.onerror = function() {
+      if (source.readyState === EventSource.CLOSED) {
+        source = null;
+        setTimeout(connect, 3000);
+      }
+    };
+  }
+
+  connect();
+})();
+
 // ── Navigation ──
-var DEFAULT_PAGE = '${workbench.spec.defaultPage}';
+var DEFAULT_PAGE = ${jsLiteral(workbench.spec.defaultPage)};
 (function() {
   function highlightNav(cleanPath) {
     document.querySelectorAll('.nav-btn').forEach(function(btn) {

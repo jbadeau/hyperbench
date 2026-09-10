@@ -1,0 +1,15 @@
+# The gateway watches Custom Resources in a single namespace, so it gets a Role
+# there rather than a cluster-wide ClusterRole. ServiceProxy resources carry the
+# internal URLs of every backend, which makes cluster-wide read of this API
+# group worth more to an attacker than it looks.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: dashboard-crd-reader
+  namespace: {{ .Values.workbenchNamespace }}
+  labels:
+    {{- include "hyperbench-dashboard.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["portal.hyperbench.com"]
+    resources: ["workbenches", "navigationnodes", "widgets", "serviceproxies", "actions", "designs"]
+    verbs: ["get", "list", "watch"]
