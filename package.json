@@ -5,6 +5,7 @@
     "hyperbench/hyperbench-dashboard",
     "todos/todos",
     "clients/clients",
-    "onboarding/onboarding"
+    "onboarding/onboarding",
+    "playground/playground"
   ]
 }
