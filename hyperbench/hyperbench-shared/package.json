@@ -15,18 +15,30 @@
     "./hal-schema-forms.js": {
       "types": "./dist/hal-schema-forms/index.d.ts",
       "default": "./dist/hal-schema-forms/index.js"
+    },
+    "./lib/html.js": {
+      "types": "./dist/lib/html.d.ts",
+      "default": "./dist/lib/html.js"
+    },
+    "./json-render.js": {
+      "types": "./dist/json-render/index.d.ts",
+      "default": "./dist/json-render/index.js"
+    },
+    "./lib/theme.js": {
+      "types": "./dist/lib/theme.d.ts",
+      "default": "./dist/lib/theme.js"
     }
   },
   "scripts": {
     "build": "tsc"
   },
   "dependencies": {
-    "@json-render/core": "^0.11.0",
-    "@json-render/react": "^0.11.0",
+    "@json-render/core": "^0.20.0",
+    "@json-render/react": "^0.20.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^4.3.6",
-    "@json-render/shadcn": "^0.11.0"
+    "@json-render/shadcn": "^0.20.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
