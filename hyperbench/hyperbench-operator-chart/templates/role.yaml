@@ -12,6 +12,7 @@ rules:
       - actions
       - navigationnodes
       - serviceproxies
+      - designs
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: ["portal.hyperbench.com"]
     resources:
@@ -20,6 +21,7 @@ rules:
       - actions/status
       - navigationnodes/status
       - serviceproxies/status
+      - designs/status
     verbs: ["get", "update", "patch"]
   - apiGroups: ["portal.hyperbench.com"]
     resources:
@@ -28,6 +30,7 @@ rules:
       - actions/finalizers
       - navigationnodes/finalizers
       - serviceproxies/finalizers
+      - designs/finalizers
     verbs: ["update"]
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]

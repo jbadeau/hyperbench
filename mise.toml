@@ -26,6 +26,7 @@ npm run build --workspace=hyperbench/hyperbench-dashboard
 npm run build --workspace=todos/todos
 npm run build --workspace=clients/clients
 npm run build --workspace=onboarding/onboarding
+npm run build --workspace=playground/playground
 mvn clean package
 cd hyperbench/hyperbench-operator && make manifests generate && CGO_ENABLED=0 GOOS=linux go build -a -o bin/manager cmd/main.go && cd ../..
 docker build -t hyperbench-operator -f hyperbench/hyperbench-operator/Dockerfile hyperbench/hyperbench-operator
@@ -36,6 +37,7 @@ docker build -t clients -f clients/clients/Dockerfile .
 docker build -t clients-service -f clients/clients-service/Dockerfile .
 docker build -t onboarding -f onboarding/onboarding/Dockerfile .
 docker build -t onboarding-service -f onboarding/onboarding-service/Dockerfile .
+docker build -t playground -f playground/playground/Dockerfile .
 """
 
 [tasks.deploy]
@@ -45,15 +47,24 @@ kind load docker-image --name hyperbench \
   hyperbench-operator hyperbench-dashboard \
   todos todos-service \
   clients clients-service \
-  onboarding onboarding-service
+  onboarding onboarding-service \
+  playground
 
-kubectl apply -k hyperbench/hyperbench-operator/config/crd
+# CRDs ship with the operator chart, which owns them. Applying config/crd
+# here as well left them unlabelled and Helm refused to adopt them.
+
+# The dashboard's Role lives in the workbench namespace, so that namespace
+# must exist before the dashboard chart is installed. The workbench chart
+# is applied last (it references services that must be up first), so the
+# namespace is created up front rather than by that chart alone.
+kubectl create namespace workbench --dry-run=client -o yaml | kubectl apply -f -
 
 helm upgrade --install hyperbench-operator ./hyperbench/hyperbench-operator-chart -n hyperbench-operator --create-namespace --set imagePullPolicy=Never
 helm upgrade --install todos ./todos/todos-chart -n todos --create-namespace
 helm upgrade --install clients ./clients/clients-chart -n clients --create-namespace
 helm upgrade --install onboarding ./onboarding/onboarding-chart -n onboarding --create-namespace
 helm upgrade --install dashboard ./hyperbench/hyperbench-dashboard-chart -n dashboard --create-namespace
+helm upgrade --install playground ./playground/playground-chart -n playground --create-namespace
 
 helm upgrade --install workbench ./workbench/workbench-chart -n workbench --create-namespace
 """
@@ -65,7 +76,7 @@ run = "tilt up"
 [tasks.status]
 description = "Show pods and CRs"
 run = """
-kubectl get pods -A | grep -E 'hyperbench-operator|todos|clients|onboarding|dashboard|workbench' || echo "No pods found"
+kubectl get pods -A | grep -E 'hyperbench-operator|todos|clients|onboarding|dashboard|workbench|playground' || echo "No pods found"
 echo ""
-kubectl get workbenches,widgets,actions,navigationnodes,serviceproxies -A 2>/dev/null || echo "CRDs not yet available"
+kubectl get workbenches,widgets,actions,navigationnodes,serviceproxies,designs -A 2>/dev/null || echo "CRDs not yet available"
 """

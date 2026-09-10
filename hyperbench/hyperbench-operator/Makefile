@@ -155,6 +155,35 @@ lint-config: golangci-lint ## Verify golangci-lint linter configuration
 
 ##@ Build
 
+.PHONY: sync-chart
+sync-chart: manifests ## Copy generated CRDs into the Helm chart and check chart RBAC covers them.
+	@echo "Syncing generated CRDs into hyperbench-operator-chart..."
+	@cp config/crd/bases/*.yaml ../hyperbench-operator-chart/templates/crds/
+	@$(MAKE) --no-print-directory verify-chart
+
+.PHONY: verify-chart
+verify-chart: ## Fail if the chart's CRDs or RBAC have drifted from the generated ones.
+	@status=0; \
+	for f in config/crd/bases/*.yaml; do \
+	  target=../hyperbench-operator-chart/templates/crds/$$(basename $$f); \
+	  if [ ! -f "$$target" ]; then \
+	    echo "MISSING in chart: $$(basename $$f)"; status=1; \
+	  elif ! diff -q "$$f" "$$target" >/dev/null; then \
+	    echo "DRIFT in chart:   $$(basename $$f)"; status=1; \
+	  fi; \
+	done; \
+	for f in config/crd/bases/*.yaml; do \
+	  plural=$$(sed -n 's/^    plural: *//p' "$$f" | head -1); \
+	  if ! grep -q "^      - $$plural$$" ../hyperbench-operator-chart/templates/role.yaml; then \
+	    echo "RBAC gap:         chart ClusterRole does not grant '$$plural'"; status=1; \
+	  fi; \
+	  if ! grep -q "^      - $$plural/status$$" ../hyperbench-operator-chart/templates/role.yaml; then \
+	    echo "RBAC gap:         chart ClusterRole does not grant '$$plural/status'"; status=1; \
+	  fi; \
+	done; \
+	if [ $$status -eq 0 ]; then echo "chart is in sync with generated manifests"; fi; \
+	exit $$status
+
 .PHONY: build
 build: manifests generate fmt vet ## Build manager binary.
 	go build -o bin/manager cmd/main.go

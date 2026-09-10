@@ -13,3 +13,7 @@ services:
   onboarding:
     frontendUrl: "http://onboarding.onboarding.svc.cluster.local:3003"
     apiUrl: "http://onboarding-api.onboarding.svc.cluster.local:8082"
+  # The playground has no separate API tier: the editor, the renderer and the
+  # Design writes all live in the one frontend process.
+  playground:
+    frontendUrl: "http://playground.playground.svc.cluster.local:3004"

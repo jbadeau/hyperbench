@@ -117,6 +117,10 @@ spec:
                       avatar:
                         description: Avatar URL for the user avatar image.
                         type: string
+                      email:
+                        description: Email is the user's email address displayed below
+                          the label.
+                        type: string
                       enabled:
                         description: Enabled controls whether the user menu is shown.
                         type: boolean

@@ -122,6 +122,30 @@ spec:
   page:
     path: "/team"
 ---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: NavigationNode
+metadata:
+  name: playground-page
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "page"
+  title: "Playground"
+  icon: "wand-sparkles"
+  ordinal: 60
+  parent: "home-group"
+  page:
+    description: "Author json-render designs and lock them down as Designs"
+    path: "/playground"
+    layout:
+      type: "grid"
+      columns: "1fr"
+      rows: "auto"
+      gap: "1rem"
+      slots:
+        - name: "editor"
+          widgetRef: "playground-editor"
+---
 # ── Documents group ──
 apiVersion: portal.hyperbench.com/v1alpha1
 kind: NavigationNode

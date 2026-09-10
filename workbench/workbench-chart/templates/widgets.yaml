@@ -138,3 +138,18 @@ spec:
     endpoint: "/dashboard/data-table"
     swap: "innerHTML"
     trigger: "load"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: Widget
+metadata:
+  name: playground-editor
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  type: "server"
+  title: "Design Playground"
+  description: "Prompt, hand-edit and preview a json-render design"
+  server:
+    endpoint: "/playground/editor"
+    swap: "innerHTML"
+    trigger: "load"

@@ -58,3 +58,22 @@ spec:
   healthCheck:
     path: "/actuator/health"
     target: "api"
+---
+apiVersion: portal.hyperbench.com/v1alpha1
+kind: ServiceProxy
+metadata:
+  name: playground-service
+  labels:
+    {{- include "hyperbench-workbench.labels" . | nindent 4 }}
+spec:
+  displayName: "Design Playground"
+  frontend:
+    baseUrl: {{ .Values.services.playground.frontendUrl | quote }}
+  proxy:
+    - pathPrefix: "/playground"
+      target: "frontend"
+  # Node service, so the Spring actuator path the other proxies use does not
+  # exist here; the playground exposes the same probe path as its Deployment.
+  healthCheck:
+    path: "/healthz"
+    target: "frontend"

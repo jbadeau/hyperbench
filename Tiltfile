@@ -9,7 +9,7 @@ allow_k8s_contexts('kind-hyperbench')
 
 # ── Namespaces ───────────────────────────────────────────────────────
 
-for ns in ['hyperbench-operator', 'todos', 'clients', 'onboarding', 'dashboard', 'workbench']:
+for ns in ['hyperbench-operator', 'todos', 'clients', 'onboarding', 'dashboard', 'playground', 'workbench']:
   namespace_create(ns)
 
 # ── Local Builds ─────────────────────────────────────────────────────
@@ -52,6 +52,13 @@ local_resource(
   'build-onboarding-frontend',
   'npm run build --workspace=onboarding/onboarding',
   deps=['onboarding/onboarding/src/'],
+  resource_deps=['build-hyperbench-shared'],
+)
+
+local_resource(
+  'build-playground',
+  'npm run build --workspace=playground/playground',
+  deps=['playground/playground/src/'],
   resource_deps=['build-hyperbench-shared'],
 )
 
@@ -136,6 +143,17 @@ docker_build(
   ],
 )
 
+docker_build(
+  'playground',
+  '.',
+  dockerfile='playground/playground/Dockerfile',
+  only=[
+    'node_modules/',
+    'hyperbench/hyperbench-shared/',
+    'playground/playground/',
+  ],
+)
+
 # Spring Boot APIs
 docker_build(
   'todos-service',
@@ -213,6 +231,17 @@ helm_resource(
   image_deps=['hyperbench-dashboard'],
   image_keys=['image'],
   resource_deps=['build-dashboard'],
+)
+
+# Playground
+helm_resource(
+  'playground',
+  './playground/playground-chart',
+  namespace='playground',
+  flags=['--set', 'imagePullPolicy=Never'],
+  image_deps=['playground'],
+  image_keys=['image'],
+  resource_deps=['build-playground'],
 )
 
 # Workbench CRs (no images — just custom resources)
