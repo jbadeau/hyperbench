@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: playground
+  labels:
+    app.kubernetes.io/name: playground
+    {{- include "hyperbench-playground.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: playground
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: playground
+    spec:
+      serviceAccountName: playground
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: playground
+          image: {{ .Values.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.port }}
+              name: http
+          env:
+            - name: PORT
+              value: "{{ .Values.port }}"
+            - name: WORKBENCH_NAMESPACE
+              value: {{ .Values.workbenchNamespace | quote }}
+            # Widget endpoints are portal paths, so templates are fetched back
+            # through the gateway rather than from the backing service.
+            - name: GATEWAY_URL
+              value: {{ .Values.gatewayUrl | quote }}
+            - name: ANTHROPIC_MODEL
+              value: {{ .Values.anthropic.model | quote }}
+            # optional: absent secret leaves generation disabled rather than
+            # failing the pod, so the editor still works without credentials.
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.anthropic.secretName }}
+                  key: {{ .Values.anthropic.secretKey }}
+                  optional: true
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: playground
+  labels:
+    app.kubernetes.io/name: playground
+    {{- include "hyperbench-playground.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/name: playground
+  ports:
+    - port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}

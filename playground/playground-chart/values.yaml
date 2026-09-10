@@ -1,0 +1,30 @@
+image: playground:latest
+imagePullPolicy: Never
+port: 3004
+replicas: 1
+
+# Namespace holding the Design resources the playground reads and writes.
+workbenchNamespace: "workbench"
+
+# Portal gateway, used to fetch a widget's json-render template by its portal path.
+gatewayUrl: "http://dashboard.dashboard.svc.cluster.local:3000"
+
+# Anthropic credentials for design generation. The playground starts and the
+# hand-editing half works without these; only the prompt box is disabled.
+#
+# Create the secret out of band so the key never lands in values.yaml or git:
+#   kubectl create secret generic playground-anthropic \
+#     --from-literal=api-key=sk-ant-... -n playground
+anthropic:
+  secretName: "playground-anthropic"
+  secretKey: "api-key"
+  # Overridable so an operator can trade cost for capability without a rebuild.
+  model: "claude-opus-5"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi

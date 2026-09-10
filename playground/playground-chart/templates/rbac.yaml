@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: playground
+  labels:
+    {{- include "hyperbench-playground.labels" . | nindent 4 }}
+---
+# The playground is the only component that writes Custom Resources, and it
+# writes exactly one kind. Designs are the durable output of the authoring loop;
+# nothing else in this Role is writable, and no other kind is reachable from it.
+#
+# Widgets are readable but not writable: an author re-skins a section that
+# already exists, and must not be able to re-point one at a different backend.
+# Delete on designs is what makes a section revertible to its original UI.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: playground-design-editor
+  namespace: {{ .Values.workbenchNamespace }}
+  labels:
+    {{- include "hyperbench-playground.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["portal.hyperbench.com"]
+    resources: ["designs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # NavigationNodes are read to work out which pages mount which widget, so a
+  # section that is not shown anywhere can be labelled as such rather than
+  # offered as if editing it would do something.
+  - apiGroups: ["portal.hyperbench.com"]
+    resources: ["widgets", "navigationnodes"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: playground-design-editor
+  namespace: {{ .Values.workbenchNamespace }}
+  labels:
+    {{- include "hyperbench-playground.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: playground
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: playground-design-editor
+  apiGroup: rbac.authorization.k8s.io
