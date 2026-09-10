@@ -1,9 +1,9 @@
 import express from "express";
 import {
   fetchHalSchemaForms,
-  esc,
   extractContextHeaders,
 } from "@hyperbench/shared/lib/fetch.js";
+import { dataAttr, errorFragment, esc } from "@hyperbench/shared/lib/html.js";
 import { renderHalForms, renderSpec } from "@hyperbench/shared/renderer.js";
 
 const CLIENTS_API_URL = process.env.CLIENTS_API_URL || "http://localhost:8083";
@@ -61,7 +61,7 @@ app.get("/clients/search", async (req, res) => {
     }
     res.type("html").send(items.map(renderClientRow).join(""));
   } catch (err) {
-    res.status(502).send(`<p>Error loading search: ${String(err)}</p>`);
+    res.status(502).send(errorFragment("loading search", err));
   }
 });
 
@@ -92,57 +92,90 @@ app.get("/clients/context", (req, res) => {
 
 // ── Clients table ──
 
+/**
+ * Column layout for the clients table.
+ *
+ * This is the design half of the widget: labels, order, alignment and which
+ * cells render as badges. It ships as the app's default and is exactly what
+ * the playground edits — rows keep coming from the API either way.
+ */
+const CLIENTS_TABLE_COLUMNS = [
+  { key: "name", label: "Name", align: null, badge: null },
+  { key: "email", label: "Email", align: null, badge: null },
+  { key: "phone", label: "Phone", align: null, badge: null },
+  { key: "riskProfile", label: "Risk Profile", align: null, badge: true },
+  { key: "accountValue", label: "Account Value", align: "right", badge: null },
+  { key: "lastActivityDate", label: "Last Activity", align: null, badge: null },
+];
+
+/** Map API items onto the DataTable row shape. */
+function clientsTableRows(items: ClientItem[]) {
+  return items.map((c) => ({
+    cells: {
+      name: c.name,
+      email: c.email ?? "",
+      phone: c.phone ?? "",
+      riskProfile: c.riskProfile ? formatRiskProfile(c.riskProfile) : "",
+      accountValue:
+        c.accountValue != null ? `CHF ${(c.accountValue / 1_000_000).toFixed(1)}M` : "\u2014",
+      lastActivityDate: c.lastActivityDate ?? "",
+    },
+    context: { ClientId: String(c.id), ClientName: c.name },
+  }));
+}
+
+/**
+ * The clients table as a json-render spec.
+ *
+ * Rows are a `$state` binding rather than literal data. That split is what lets
+ * a saved Design change this widget's appearance without freezing its content:
+ * the design carries the layout, the app supplies the rows at render time, and
+ * an edited design keeps showing live clients. Baking rows into the spec would
+ * mean applying a design pins the table to whatever data existed when it was
+ * authored.
+ */
+function clientsTableSpec(columns = CLIENTS_TABLE_COLUMNS) {
+  return {
+    root: "clients-table",
+    elements: {
+      "clients-table": {
+        type: "DataTable" as const,
+        props: {
+          title: "Clients",
+          subtitle: "All clients and their portfolios",
+          columns,
+          rows: { $state: "/rows" },
+          emptyMessage: "No clients found",
+        },
+      },
+    },
+  };
+}
+
 app.get("/clients/table", async (req, res) => {
   try {
+    // `format=spec` is the layout with no data — what the playground edits.
+    // It needs no API call, so it is answered before one is made.
+    if (req.query.format === "spec") {
+      res.type("application/json").send(JSON.stringify(clientsTableSpec(), null, 2));
+      return;
+    }
+
     const ctx = extractContextHeaders(req);
     const resource = await fetchHalSchemaForms(`${CLIENTS_API_URL}/ui/clients`, ctx);
     const items = (resource.items || []) as unknown as ClientItem[];
+    const state = { rows: clientsTableRows(items) };
 
-    const rows = items.map(c => {
-      const riskBadge = c.riskProfile
-        ? `<span class="${riskBadgeClass()}">${formatRiskProfile(c.riskProfile)}</span>`
-        : "";
-      const accountVal = c.accountValue != null
-        ? `CHF ${(c.accountValue / 1_000_000).toFixed(1)}M`
-        : "—";
-      return `
-        <tr class="border-b transition-colors hover:bg-muted/50 cursor-pointer"
-            onclick="WorkbenchContext.set('ClientId','${c.id}'); WorkbenchContext.set('ClientName','${esc(c.name)}')">
-          <td class="p-2 align-middle whitespace-nowrap text-muted-foreground">${esc(c.name)}</td>
-          <td class="p-2 align-middle whitespace-nowrap text-muted-foreground">${esc(c.email ?? "")}</td>
-          <td class="p-2 align-middle whitespace-nowrap text-muted-foreground">${esc(c.phone ?? "")}</td>
-          <td class="p-2 align-middle whitespace-nowrap">${riskBadge}</td>
-          <td class="p-2 align-middle whitespace-nowrap text-muted-foreground text-right">${accountVal}</td>
-          <td class="p-2 align-middle whitespace-nowrap text-muted-foreground">${esc(c.lastActivityDate ?? "")}</td>
-        </tr>`;
-    }).join("");
+    // `format=state` is the data with no layout — what the portal fetches when
+    // a saved Design has replaced this widget's own layout.
+    if (req.query.format === "state") {
+      res.type("application/json").send(JSON.stringify(state));
+      return;
+    }
 
-    res.type("html").send(`
-      <div class="flex items-end justify-between mb-5">
-        <div>
-          <h1 class="text-2xl font-semibold text-foreground">Clients</h1>
-          <p class="text-sm text-muted-foreground mt-0.5">All clients and their portfolios</p>
-        </div>
-      </div>
-      <div class="relative w-full overflow-x-auto rounded-xl border border-border">
-        <table class="w-full caption-bottom text-sm">
-          <thead class="[&_tr]:border-b">
-            <tr class="border-b transition-colors hover:bg-muted/50">
-              <th class="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground">Name</th>
-              <th class="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground">Email</th>
-              <th class="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground">Phone</th>
-              <th class="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground">Risk Profile</th>
-              <th class="h-10 px-2 text-right align-middle font-medium whitespace-nowrap text-foreground">Account Value</th>
-              <th class="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground">Last Activity</th>
-            </tr>
-          </thead>
-          <tbody class="[&_tr:last-child]:border-0">
-            ${rows || '<tr><td colspan="6" class="p-2 text-center text-muted-foreground h-24">No clients found</td></tr>'}
-          </tbody>
-        </table>
-      </div>`);
+    res.type("html").send(renderSpec(clientsTableSpec(), state));
   } catch (err) {
-    res.status(502).send(`<p>Error loading clients table: ${String(err)}</p>`);
+    res.status(502).send(errorFragment("loading clients table", err));
   }
 });
 
@@ -209,7 +242,7 @@ app.get("/clients/favorites", async (req, res) => {
         </div>
       </div>`);
   } catch (err) {
-    res.status(502).send(`<p>Error loading favorites: ${String(err)}</p>`);
+    res.status(502).send(errorFragment("loading favorites", err));
   }
 });
 
@@ -253,7 +286,7 @@ app.get("/clients/recent", async (req, res) => {
         </div>
       </div>`);
   } catch (err) {
-    res.status(502).send(`<p>Error loading recent: ${String(err)}</p>`);
+    res.status(502).send(errorFragment("loading recent", err));
   }
 });
 
@@ -265,7 +298,7 @@ app.get("/clients/add", async (req, res) => {
     const resource = await fetchHalSchemaForms(`${CLIENTS_API_URL}/ui/clients/form`, ctx);
     res.type("html").send(renderHalForms(resource));
   } catch (err) {
-    res.status(502).send(`<p>Error loading form: ${String(err)}</p>`);
+    res.status(502).send(errorFragment("loading form", err));
   }
 });
 
@@ -277,7 +310,7 @@ app.get("/clients/:id/edit", async (req, res) => {
     );
     res.type("html").send(renderHalForms(resource));
   } catch (err) {
-    res.status(502).send(`<p>Error loading form: ${String(err)}</p>`);
+    res.status(502).send(errorFragment("loading form", err));
   }
 });
 
@@ -294,7 +327,7 @@ function riskBadgeClass(): string {
 function renderClientRow(c: ClientItem): string {
   return `
     <div class="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-accent transition rounded-lg"
-         onclick="WorkbenchContext.set('ClientId','${c.id}'); WorkbenchContext.set('ClientName','${esc(c.name)}')">
+         data-set-context="${dataAttr({ ClientId: c.id, ClientName: c.name })}">
       <div class="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">${esc(c.initials)}</div>
       <div class="flex-1 min-w-0">
         <div class="text-sm font-medium text-foreground truncate">${esc(c.name)}</div>
@@ -317,7 +350,7 @@ function renderClientCards(clients: ClientItem[]): string {
     .map(
       (c) => `
       <div class="flex items-center gap-3 py-2.5 border-b border-border last:border-b-0 cursor-pointer hover:bg-accent transition rounded-lg px-1"
-           onclick="WorkbenchContext.set('ClientId','${c.id}'); WorkbenchContext.set('ClientName','${esc(c.name)}')">
+           data-set-context="${dataAttr({ ClientId: c.id, ClientName: c.name })}">
         <div class="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">${esc(c.initials)}</div>
         <div class="flex-1 min-w-0">
           <div class="text-sm font-medium text-foreground truncate">${esc(c.name)}</div>
